@@ -68,6 +68,41 @@ Belongs to the [bc boilerplates](https://bcboilerplates.com/) ecosystem
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
+Steps To Start : 
+
+1- Clone Template Project 
+git clone --depth 1 https://github.com/brocoders/nestjs-boilerplate.git my-app
+
+
+
+2- Create .env 
+Go to folder, and copy env-example-relational as .env
+
+
+3- Install dependency
+npm install
+
+
+4- Run app configuration
+npm run app:config
+
+
+5- Run migrations
+npm run migration:run
+
+
+6- Run seeds
+npm run seed:run:relational
+
+
+7- Run app in dev mode
+npm run start:dev
+
+
+8- Open http://localhost:3000/docs in Browser
+
+
+
 ## Support
 
 If you seek consulting, support, or wish to collaborate, please contact us via [boilerplates@brocoders.com](mailto:boilerplates@brocoders.com). For any inquiries regarding boilerplates, feel free to ask on [GitHub Discussions](https://github.com/brocoders/nestjs-boilerplate/discussions) or [Discord](https://discord.com/channels/520622812742811698/1197293125434093701).
