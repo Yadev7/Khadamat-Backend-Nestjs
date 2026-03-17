@@ -1,3 +1,5 @@
+import { MemberEntity } from '../../../../../members/infrastructure/persistence/relational/entities/member.entity';
+
 import {
   Column,
   CreateDateColumn,
@@ -21,54 +23,50 @@ import { EntityRelationalHelper } from '../../../../../utils/relational-entity-h
   name: 'user',
 })
 export class UserEntity extends EntityRelationalHelper {
+  @OneToOne(() => MemberEntity, { eager: true, nullable: true })
+  @JoinColumn()
+  member?: MemberEntity | null;
+
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   // For "string | null" we need to use String type.
   // More info: https://github.com/typeorm/typeorm/issues/2567
   @Column({ type: String, unique: true, nullable: true })
-  email: string | null;
+  email?: string | null;
 
   @Column({ nullable: true })
   password?: string;
 
   @Column({ default: AuthProvidersEnum.email })
-  provider: string;
+  provider?: string;
 
   @Index()
   @Column({ type: String, nullable: true })
   socialId?: string | null;
 
-  @Index()
-  @Column({ type: String, nullable: true })
-  firstName: string | null;
-
-  @Index()
-  @Column({ type: String, nullable: true })
-  lastName: string | null;
-
   @OneToOne(() => FileEntity, {
-    eager: true,
+    eager: false,
   })
   @JoinColumn()
   photo?: FileEntity | null;
 
   @ManyToOne(() => RoleEntity, {
-    eager: true,
+    eager: false,
   })
   role?: RoleEntity | null;
 
   @ManyToOne(() => StatusEntity, {
-    eager: true,
+    eager: false,
   })
   status?: StatusEntity;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt?: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt?: Date;
 
   @DeleteDateColumn()
-  deletedAt: Date;
+  deletedAt?: Date;
 }

@@ -21,11 +21,11 @@ export class SortUserDto {
   @ApiProperty()
   @Type(() => String)
   @IsString()
-  orderBy: keyof User;
+  orderBy?: keyof User;
 
   @ApiProperty()
   @IsString()
-  order: string;
+  order?: string;
 }
 
 export class QueryUserDto {

@@ -1,5 +1,10 @@
+import { MembersService } from '../members/members.service';
+import { Member } from '../members/domain/member';
+
 import {
+  forwardRef,
   HttpStatus,
+  Inject,
   Injectable,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -22,6 +27,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @Injectable()
 export class UsersService {
   constructor(
+    @Inject(forwardRef(() => MembersService))
+    private readonly memberService: MembersService,
     private readonly usersRepository: UserRepository,
     private readonly filesService: FilesService,
   ) {}
@@ -29,6 +36,24 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     // Do not remove comment below.
     // <creating-property />
+    let member: Member | null | undefined = undefined;
+
+    if (createUserDto.member) {
+      const memberObject = await this.memberService.findById(
+        createUserDto.member.id,
+      );
+      if (!memberObject) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            member: 'notExists',
+          },
+        });
+      }
+      member = memberObject;
+    } else if (createUserDto.member === null) {
+      member = null;
+    }
 
     let password: string | undefined = undefined;
 
@@ -116,8 +141,8 @@ export class UsersService {
     return this.usersRepository.create({
       // Do not remove comment below.
       // <creating-property-payload />
-      firstName: createUserDto.firstName,
-      lastName: createUserDto.lastName,
+      member,
+
       email: email,
       password: password,
       photo: photo,
@@ -175,6 +200,24 @@ export class UsersService {
   ): Promise<User | null> {
     // Do not remove comment below.
     // <updating-property />
+    let member: Member | null | undefined = undefined;
+
+    if (updateUserDto.member) {
+      const memberObject = await this.memberService.findById(
+        updateUserDto.member.id,
+      );
+      if (!memberObject) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            member: 'notExists',
+          },
+        });
+      }
+      member = memberObject;
+    } else if (updateUserDto.member === null) {
+      member = null;
+    }
 
     let password: string | undefined = undefined;
 
@@ -270,8 +313,8 @@ export class UsersService {
     return this.usersRepository.update(id, {
       // Do not remove comment below.
       // <updating-property-payload />
-      firstName: updateUserDto.firstName,
-      lastName: updateUserDto.lastName,
+      member,
+
       email,
       password,
       photo,

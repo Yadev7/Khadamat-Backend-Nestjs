@@ -45,13 +45,22 @@ export class UsersRelationalRepository implements UserRepository {
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
       where: where,
-      order: sortOptions?.reduce(
-        (accumulator, sort) => ({
-          ...accumulator,
-          [sort.orderBy]: sort.order,
-        }),
-        {},
-      ),
+      order: sortOptions
+        ? sortOptions.reduce(
+            (accumulator, sort) => {
+              if (sort.orderBy && sort.order) {
+                const orderValue: 'ASC' | 'DESC' =
+                  sort.order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+                return {
+                  ...accumulator,
+                  [sort.orderBy]: orderValue,
+                };
+              }
+              return accumulator;
+            },
+            {} as Record<string, 'ASC' | 'DESC'>,
+          )
+        : undefined,
     });
 
     return entities.map((user) => UserMapper.toDomain(user));
@@ -121,6 +130,6 @@ export class UsersRelationalRepository implements UserRepository {
   }
 
   async remove(id: User['id']): Promise<void> {
-    await this.usersRepository.softDelete(id);
+    await this.usersRepository.softDelete(id!);
   }
 }

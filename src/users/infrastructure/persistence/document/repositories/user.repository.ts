@@ -40,18 +40,31 @@ export class UsersDocumentRepository implements UserRepository {
       };
     }
 
+    const sortObj: Record<string, 1 | -1> | undefined =
+      sortOptions && Array.isArray(sortOptions)
+        ? sortOptions.reduce(
+            (accumulator, sort) => {
+              if (sort && sort.orderBy && sort.order) {
+                const key = sort.orderBy === 'id' ? '_id' : sort.orderBy;
+                const orderValue =
+                  typeof sort.order === 'string' &&
+                  sort.order.toUpperCase() === 'ASC'
+                    ? 1
+                    : -1;
+                return {
+                  ...accumulator,
+                  [key]: orderValue,
+                };
+              }
+              return accumulator;
+            },
+            {} as Record<string, 1 | -1>,
+          )
+        : undefined;
+
     const userObjects = await this.usersModel
       .find(where)
-      .sort(
-        sortOptions?.reduce(
-          (accumulator, sort) => ({
-            ...accumulator,
-            [sort.orderBy === 'id' ? '_id' : sort.orderBy]:
-              sort.order.toUpperCase() === 'ASC' ? 1 : -1,
-          }),
-          {},
-        ),
-      )
+      .sort(sortObj)
       .skip((paginationOptions.page - 1) * paginationOptions.limit)
       .limit(paginationOptions.limit);
 
@@ -96,7 +109,7 @@ export class UsersDocumentRepository implements UserRepository {
     const clonedPayload = { ...payload };
     delete clonedPayload.id;
 
-    const filter = { _id: id.toString() };
+    const filter = { _id: id!.toString() };
     const user = await this.usersModel.findOne(filter);
 
     if (!user) {
@@ -117,7 +130,7 @@ export class UsersDocumentRepository implements UserRepository {
 
   async remove(id: User['id']): Promise<void> {
     await this.usersModel.deleteOne({
-      _id: id.toString(),
+      _id: id!.toString(),
     });
   }
 }

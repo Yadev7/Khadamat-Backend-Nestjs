@@ -1,4 +1,6 @@
 import { FileEntity } from '../../../../../files/infrastructure/persistence/relational/entities/file.entity';
+import { MemberMapper } from '../../../../../members/infrastructure/persistence/relational/mappers/member.mapper';
+
 import { FileMapper } from '../../../../../files/infrastructure/persistence/relational/mappers/file.mapper';
 import { RoleEntity } from '../../../../../roles/infrastructure/persistence/relational/entities/role.entity';
 import { StatusEntity } from '../../../../../statuses/infrastructure/persistence/relational/entities/status.entity';
@@ -8,13 +10,17 @@ import { UserEntity } from '../entities/user.entity';
 export class UserMapper {
   static toDomain(raw: UserEntity): User {
     const domainEntity = new User();
+    if (raw.member) {
+      domainEntity.member = MemberMapper.toDomain(raw.member);
+    } else if (raw.member === null) {
+      domainEntity.member = null;
+    }
+
     domainEntity.id = raw.id;
-    domainEntity.email = raw.email;
+    domainEntity.email = raw.email === undefined ? null : raw.email;
     domainEntity.password = raw.password;
-    domainEntity.provider = raw.provider;
+    domainEntity.provider = raw.provider ?? '';
     domainEntity.socialId = raw.socialId;
-    domainEntity.firstName = raw.firstName;
-    domainEntity.lastName = raw.lastName;
     if (raw.photo) {
       domainEntity.photo = FileMapper.toDomain(raw.photo);
     }
@@ -52,6 +58,14 @@ export class UserMapper {
     }
 
     const persistenceEntity = new UserEntity();
+    if (domainEntity.member) {
+      persistenceEntity.member = MemberMapper.toPersistence(
+        domainEntity.member,
+      );
+    } else if (domainEntity.member === null) {
+      persistenceEntity.member = null;
+    }
+
     if (domainEntity.id && typeof domainEntity.id === 'number') {
       persistenceEntity.id = domainEntity.id;
     }
@@ -59,8 +73,6 @@ export class UserMapper {
     persistenceEntity.password = domainEntity.password;
     persistenceEntity.provider = domainEntity.provider;
     persistenceEntity.socialId = domainEntity.socialId;
-    persistenceEntity.firstName = domainEntity.firstName;
-    persistenceEntity.lastName = domainEntity.lastName;
     persistenceEntity.photo = photo;
     persistenceEntity.role = role;
     persistenceEntity.status = status;

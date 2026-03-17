@@ -1,0 +1,82 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
+import { CityAreaEntity } from '../entities/city-area.entity';
+import { NullableType } from '../../../../../utils/types/nullable.type';
+import { CityArea } from '../../../../domain/city-area';
+import { CityAreaRepository } from '../../city-area.repository';
+import { CityAreaMapper } from '../mappers/city-area.mapper';
+import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
+
+@Injectable()
+export class CityAreaRelationalRepository implements CityAreaRepository {
+  constructor(
+    @InjectRepository(CityAreaEntity)
+    private readonly cityAreaRepository: Repository<CityAreaEntity>,
+  ) {}
+
+  async create(data: CityArea): Promise<CityArea> {
+    const persistenceModel = CityAreaMapper.toPersistence(data);
+    const newEntity = await this.cityAreaRepository.save(
+      this.cityAreaRepository.create(persistenceModel),
+    );
+    return CityAreaMapper.toDomain(newEntity);
+  }
+
+  async findAllWithPagination({
+    paginationOptions,
+  }: {
+    paginationOptions: IPaginationOptions;
+  }): Promise<CityArea[]> {
+    const entities = await this.cityAreaRepository.find({
+      skip: (paginationOptions.page - 1) * paginationOptions.limit,
+      take: paginationOptions.limit,
+    });
+
+    return entities.map((entity) => CityAreaMapper.toDomain(entity));
+  }
+
+  async findById(id: CityArea['id']): Promise<NullableType<CityArea>> {
+    const entity = await this.cityAreaRepository.findOne({
+      where: { id },
+    });
+
+    return entity ? CityAreaMapper.toDomain(entity) : null;
+  }
+
+  async findByIds(ids: CityArea['id'][]): Promise<CityArea[]> {
+    const entities = await this.cityAreaRepository.find({
+      where: { id: In(ids) },
+    });
+
+    return entities.map((entity) => CityAreaMapper.toDomain(entity));
+  }
+
+  async update(
+    id: CityArea['id'],
+    payload: Partial<CityArea>,
+  ): Promise<CityArea> {
+    const entity = await this.cityAreaRepository.findOne({
+      where: { id },
+    });
+
+    if (!entity) {
+      throw new Error('Record not found');
+    }
+
+    const updatedEntity = await this.cityAreaRepository.save(
+      this.cityAreaRepository.create(
+        CityAreaMapper.toPersistence({
+          ...CityAreaMapper.toDomain(entity),
+          ...payload,
+        }),
+      ),
+    );
+
+    return CityAreaMapper.toDomain(updatedEntity);
+  }
+
+  async remove(id: CityArea['id']): Promise<void> {
+    await this.cityAreaRepository.delete(id);
+  }
+}

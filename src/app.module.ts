@@ -36,14 +36,59 @@ const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
     })
   : TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
-      dataSourceFactory: async (options: DataSourceOptions) => {
-        return new DataSource(options).initialize();
+      dataSourceFactory: async (options: DataSourceOptions | undefined) => {
+        return new DataSource(options as DataSourceOptions).initialize();
       },
     });
 // </database-block>
 
+import { CountriesModule } from './countries/countries.module';
+
+import { CitiesModule } from './cities/cities.module';
+
+import { LocalisationsModule } from './localisations/localisations.module';
+
+import { CityAreasModule } from './city-areas/city-areas.module';
+
+import { ServicesModule } from './services/services.module';
+
+import { AddressesModule } from './addresses/addresses.module';
+
+import { ContactsModule } from './contacts/contacts.module';
+
+import { EntreprisesModule } from './entreprises/entreprises.module';
+
+import { MembersModule } from './members/members.module';
+
+import { BusinessesModule } from './businesses/businesses.module';
+
+import { ImagesBusinessesModule } from './images-businesses/images-businesses.module';
+
+import { EvaluationsModule } from './evaluations/evaluations.module';
+
+import { ReportsModule } from './reports/reports.module';
+
+import { CallsModule } from './calls/calls.module';
+
+import { MessagesModule } from './messages/messages.module';
+
 @Module({
   imports: [
+    MessagesModule,
+    CallsModule,
+    ReportsModule,
+    EvaluationsModule,
+    ImagesBusinessesModule,
+    BusinessesModule,
+    MembersModule,
+    EntreprisesModule,
+    ContactsModule,
+    AddressesModule,
+    ServicesModule,
+    CityAreasModule,
+    LocalisationsModule,
+    CitiesModule,
+    CountriesModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [

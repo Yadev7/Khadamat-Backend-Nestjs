@@ -21,7 +21,7 @@ export class UserSchemaClass extends EntityDocumentHelper {
     type: String,
     unique: true,
   })
-  email: string | null;
+  email?: string | null;
 
   @Prop()
   password?: string;
@@ -29,23 +29,13 @@ export class UserSchemaClass extends EntityDocumentHelper {
   @Prop({
     default: AuthProvidersEnum.email,
   })
-  provider: string;
+  provider?: string;
 
   @Prop({
     type: String,
     default: null,
   })
   socialId?: string | null;
-
-  @Prop({
-    type: String,
-  })
-  firstName: string | null;
-
-  @Prop({
-    type: String,
-  })
-  lastName: string | null;
 
   @Prop({
     type: FileSchemaClass,
@@ -63,13 +53,13 @@ export class UserSchemaClass extends EntityDocumentHelper {
   status?: StatusSchema;
 
   @Prop({ default: now })
-  createdAt: Date;
+  createdAt?: Date;
 
   @Prop({ default: now })
-  updatedAt: Date;
+  updatedAt?: Date;
 
   @Prop()
-  deletedAt: Date;
+  deletedAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserSchemaClass);

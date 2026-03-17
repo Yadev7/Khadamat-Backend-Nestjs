@@ -6,14 +6,14 @@ import { SessionEntity } from '../entities/session.entity';
 export class SessionMapper {
   static toDomain(raw: SessionEntity): Session {
     const domainEntity = new Session();
-    domainEntity.id = raw.id;
+    domainEntity.id = raw.id as number;
     if (raw.user) {
       domainEntity.user = UserMapper.toDomain(raw.user);
     }
-    domainEntity.hash = raw.hash;
-    domainEntity.createdAt = raw.createdAt;
-    domainEntity.updatedAt = raw.updatedAt;
-    domainEntity.deletedAt = raw.deletedAt;
+    domainEntity.hash = raw.hash as string;
+    domainEntity.createdAt = raw.createdAt as Date;
+    domainEntity.updatedAt = raw.updatedAt as Date;
+    domainEntity.deletedAt = raw.deletedAt as Date;
     return domainEntity;
   }
 

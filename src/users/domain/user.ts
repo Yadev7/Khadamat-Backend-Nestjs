@@ -1,3 +1,4 @@
+import { Member } from '../../members/domain/member';
 import { Exclude, Expose } from 'class-transformer';
 import { FileType } from '../../files/domain/file';
 import { Role } from '../../roles/domain/role';
@@ -14,16 +15,22 @@ const idType = (databaseConfig() as DatabaseConfig).isDocumentDatabase
 
 export class User {
   @ApiProperty({
+    type: () => Member,
+    nullable: true,
+  })
+  member?: Member | null;
+
+  @ApiProperty({
     type: idType,
   })
-  id: number | string;
+  id?: number | string;
 
   @ApiProperty({
     type: String,
     example: 'john.doe@example.com',
   })
   @Expose({ groups: ['me', 'admin'] })
-  email: string | null;
+  email?: string | null;
 
   @Exclude({ toPlainOnly: true })
   password?: string;
@@ -33,7 +40,7 @@ export class User {
     example: 'email',
   })
   @Expose({ groups: ['me', 'admin'] })
-  provider: string;
+  provider?: string;
 
   @ApiProperty({
     type: String,
@@ -41,18 +48,6 @@ export class User {
   })
   @Expose({ groups: ['me', 'admin'] })
   socialId?: string | null;
-
-  @ApiProperty({
-    type: String,
-    example: 'John',
-  })
-  firstName: string | null;
-
-  @ApiProperty({
-    type: String,
-    example: 'Doe',
-  })
-  lastName: string | null;
 
   @ApiProperty({
     type: () => FileType,
@@ -70,11 +65,11 @@ export class User {
   status?: Status;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt?: Date;
 
   @ApiProperty()
-  updatedAt: Date;
+  updatedAt?: Date;
 
   @ApiProperty()
-  deletedAt: Date;
+  deletedAt?: Date;
 }

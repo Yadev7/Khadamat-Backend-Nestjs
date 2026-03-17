@@ -15,8 +15,6 @@ export class UserMapper {
     domainEntity.password = raw.password;
     domainEntity.provider = raw.provider;
     domainEntity.socialId = raw.socialId;
-    domainEntity.firstName = raw.firstName;
-    domainEntity.lastName = raw.lastName;
     if (raw.photo) {
       domainEntity.photo = FileMapper.toDomain(raw.photo);
     } else if (raw.photo === null) {
@@ -67,18 +65,16 @@ export class UserMapper {
     if (domainEntity.id && typeof domainEntity.id === 'string') {
       persistenceSchema._id = domainEntity.id;
     }
-    persistenceSchema.email = domainEntity.email;
-    persistenceSchema.password = domainEntity.password;
-    persistenceSchema.provider = domainEntity.provider;
+    persistenceSchema.email = domainEntity.email ?? '';
+    persistenceSchema.password = domainEntity.password ?? '';
+    persistenceSchema.provider = domainEntity.provider ?? '';
     persistenceSchema.socialId = domainEntity.socialId;
-    persistenceSchema.firstName = domainEntity.firstName;
-    persistenceSchema.lastName = domainEntity.lastName;
     persistenceSchema.photo = photo;
     persistenceSchema.role = role;
     persistenceSchema.status = status;
-    persistenceSchema.createdAt = domainEntity.createdAt;
-    persistenceSchema.updatedAt = domainEntity.updatedAt;
-    persistenceSchema.deletedAt = domainEntity.deletedAt;
+    persistenceSchema.createdAt = domainEntity.createdAt ?? new Date();
+    persistenceSchema.updatedAt = domainEntity.updatedAt ?? new Date();
+    persistenceSchema.deletedAt = domainEntity.deletedAt ?? new Date();
     return persistenceSchema;
   }
 }

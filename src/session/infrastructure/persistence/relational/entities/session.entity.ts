@@ -17,23 +17,23 @@ import { EntityRelationalHelper } from '../../../../../utils/relational-entity-h
 })
 export class SessionEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn()
-  id: number;
+  id?: number;
 
   @ManyToOne(() => UserEntity, {
-    eager: true,
+    eager: false,
   })
   @Index()
-  user: UserEntity;
+  user?: UserEntity;
 
   @Column()
-  hash: string;
+  hash?: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt?: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt?: Date;
 
   @DeleteDateColumn()
-  deletedAt: Date;
+  deletedAt?: Date;
 }

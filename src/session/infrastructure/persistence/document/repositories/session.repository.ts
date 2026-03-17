@@ -61,7 +61,7 @@ export class SessionDocumentRepository implements SessionRepository {
   }
 
   async deleteByUserId({ userId }: { userId: User['id'] }): Promise<void> {
-    await this.sessionModel.deleteMany({ user: userId.toString() });
+    await this.sessionModel.deleteMany({ user: userId!.toString() });
   }
 
   async deleteByUserIdWithExclude({
@@ -72,7 +72,7 @@ export class SessionDocumentRepository implements SessionRepository {
     excludeSessionId: Session['id'];
   }): Promise<void> {
     const transformedCriteria = {
-      user: userId.toString(),
+      user: userId!.toString(),
       _id: { $not: { $eq: excludeSessionId.toString() } },
     };
     await this.sessionModel.deleteMany(transformedCriteria);

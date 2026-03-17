@@ -28,6 +28,7 @@ import { Session } from '../session/domain/session';
 import { SessionService } from '../session/session.service';
 import { StatusEnum } from '../statuses/statuses.enum';
 import { User } from '../users/domain/user';
+import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -131,7 +132,7 @@ export class AuthService {
       if (socialEmail && !userByEmail) {
         user.email = socialEmail;
       }
-      await this.usersService.update(user.id, user);
+      await this.usersService.update(user.id as number, user as UpdateUserDto);
     } else if (userByEmail) {
       user = userByEmail;
     } else if (socialData.id) {
@@ -144,8 +145,6 @@ export class AuthService {
 
       user = await this.usersService.create({
         email: socialEmail ?? null,
-        firstName: socialData.firstName ?? null,
-        lastName: socialData.lastName ?? null,
         socialId: socialData.id,
         provider: authProvider,
         role,
@@ -220,7 +219,7 @@ export class AuthService {
     );
 
     await this.mailService.userSignUp({
-      to: dto.email,
+      to: dto.email!,
       data: {
         hash,
       },
@@ -265,7 +264,7 @@ export class AuthService {
       id: StatusEnum.active,
     };
 
-    await this.usersService.update(user.id, user);
+    await this.usersService.update(user.id as number, user as UpdateUserDto);
   }
 
   async confirmNewEmail(hash: string): Promise<void> {
@@ -307,7 +306,7 @@ export class AuthService {
       id: StatusEnum.active,
     };
 
-    await this.usersService.update(user.id, user);
+    await this.usersService.update(user.id as number, user as UpdateUserDto);
   }
 
   async forgotPassword(email: string): Promise<void> {
@@ -388,7 +387,7 @@ export class AuthService {
       userId: user.id,
     });
 
-    await this.usersService.update(user.id, user);
+    await this.usersService.update(user.id as number, user as UpdateUserDto);
   }
 
   async me(userJwtPayload: JwtPayloadType): Promise<NullableType<User>> {
