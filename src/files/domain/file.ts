@@ -8,6 +8,7 @@ import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { AppConfig } from '../../config/app-config.type';
 import appConfig from '../../config/app.config';
+import { FileCategory } from '../file-category.enum';
 
 export class FileType {
   @ApiProperty({
@@ -53,4 +54,22 @@ export class FileType {
     },
   )
   path: string;
+
+  // ── ADD THESE TWO FIELDS ──────────────────────────────────────────
+
+  @ApiProperty({
+    enum: FileCategory,
+    enumName: 'FileCategory',
+    example: FileCategory.IMAGE,
+  })
+  @Allow()
+  fileCategory: FileCategory;
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    example: 'Profile picture upload',
+  })
+  @Allow()
+  fileDescription: string | null;
 }

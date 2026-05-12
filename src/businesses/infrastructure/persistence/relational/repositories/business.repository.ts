@@ -13,10 +13,19 @@ export class BusinessRelationalRepository implements BusinessRepository {
   constructor(
     @InjectRepository(BusinessEntity)
     private readonly businessRepository: Repository<BusinessEntity>,
-  ) {}
+  ) { }
 
-  // Centralize relations to keep code DRY
-  private readonly relations = ['contact', 'service', 'owner', 'manager'];
+  private readonly relations = [
+    'contact',
+    'contact.address',
+    'service',
+    'owner',
+    'owner.contact',
+    'owner.user',
+    'manager',
+    'flyer',
+  ];
+
 
   async create(data: Business): Promise<Business> {
     const persistenceModel = BusinessMapper.toPersistence(data);
@@ -27,17 +36,105 @@ export class BusinessRelationalRepository implements BusinessRepository {
     return this.findById(newEntity.id) as Promise<Business>;
   }
 
+  // async findAllWithPagination({
+  //   paginationOptions,
+  //   filterOptions,
+  // }: {
+  //   paginationOptions: IPaginationOptions;
+  //   filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
+  // }): Promise<Business[]> {
+  //   const entities = await this.businessRepository.find({
+  //     skip: (paginationOptions.page - 1) * paginationOptions.limit,
+  //     take: paginationOptions.limit,
+  //     relations: this.relations, // CRITICAL: Load the owner and manager
+  //   });
+
+  //   return entities.map((entity) => BusinessMapper.toDomain(entity));
+  // }
+
+
+  // business.repository.ts (النسخة العلائقية / Relational)
+
+  // async findAllWithPagination({
+  //   paginationOptions,
+  //   filterOptions,
+  // }: {
+  //   paginationOptions: IPaginationOptions;
+  //   filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
+  // }): Promise<Business[]> {
+  //   const query = this.businessRepository
+  //     .createQueryBuilder('business')
+  //     .leftJoinAndSelect('business.service', 'business_service')
+  //     .leftJoinAndSelect('business.contact', 'contact')
+  //     .leftJoinAndSelect('contact.address', 'address')
+  //     .leftJoinAndSelect('address.localisation', 'localisation')
+  //     .leftJoinAndSelect('address.city', 'city')
+  //     .leftJoinAndSelect('address.zone', 'zone')
+  //     .leftJoinAndSelect('business.owner', 'owner')
+  //     .leftJoinAndSelect('owner.contact', 'ownerContact')
+  //     .leftJoinAndSelect('business.flyer', 'flyer');
+
+  //   // --- تفعيل الفلترة الحقيقية ---
+
+  //   if (filterOptions?.serviceId) {
+  //     query.andWhere('business_service.id = :serviceId', { serviceId: filterOptions.serviceId });
+  //   }
+
+  //   if (filterOptions?.cityId) {
+  //     query.andWhere('city.id = :cityId', { cityId: filterOptions.cityId });
+  //   }
+
+  //   if (filterOptions?.zoneId) {
+  //     query.andWhere('zone.id = :zoneId', { zoneId: filterOptions.zoneId });
+  //   }
+
+  //   // الترتيب والصفحات
+  //   query
+  //     .skip((paginationOptions.page - 1) * paginationOptions.limit)
+  //     .take(paginationOptions.limit);
+
+  //   const entities = await query.getMany();
+
+  //   // تحويل النتائج إلى Domain Objects باستخدام الـ Mapper الخاص بك
+  //   return entities.map((entity) => BusinessMapper.toDomain(entity));
+  // }
+
+
+  // businesses/infrastructure/persistence/relational/repositories/business.repository.ts
+
   async findAllWithPagination({
     paginationOptions,
+    filterOptions,
   }: {
     paginationOptions: IPaginationOptions;
+    filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
   }): Promise<Business[]> {
-    const entities = await this.businessRepository.find({
-      skip: (paginationOptions.page - 1) * paginationOptions.limit,
-      take: paginationOptions.limit,
-      relations: this.relations, // CRITICAL: Load the owner and manager
-    });
+    const query = this.businessRepository.createQueryBuilder('business')
+      .leftJoinAndSelect('business.service', 'service')
+      .leftJoinAndSelect('business.flyer', 'flyer')
+      .leftJoinAndSelect('business.contact', 'contact')
+      .leftJoinAndSelect('contact.address', 'address')
+      .leftJoinAndSelect('address.localisation', 'localisation');
 
+    if (filterOptions?.serviceId) {
+      query.andWhere('service.id = :serviceId', { serviceId: filterOptions.serviceId });
+    }
+
+    if (filterOptions?.cityId) {
+      // Assuming your Address entity has a city relationship
+      query.andWhere('address.cityId = :cityId', { cityId: filterOptions.cityId });
+    }
+
+    if (filterOptions?.zoneId) {
+      // Assuming your Address entity has a zone/area relationship
+      query.andWhere('address.zoneId = :zoneId', { zoneId: filterOptions.zoneId });
+    }
+
+    query
+      .skip((paginationOptions.page - 1) * paginationOptions.limit)
+      .take(paginationOptions.limit);
+
+    const entities = await query.getMany();
     return entities.map((entity) => BusinessMapper.toDomain(entity));
   }
 

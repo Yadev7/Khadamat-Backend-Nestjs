@@ -19,6 +19,7 @@ import { FileEntity } from 'src/files/infrastructure/persistence/relational/enti
 import { EvaluationEntity } from 'src/evaluations/infrastructure/persistence/relational/entities/evaluation.entity';
 import { CallEntity } from 'src/calls/infrastructure/persistence/relational/entities/call.entity';
 import { ReportEntity } from 'src/reports/infrastructure/persistence/relational/entities/report.entity';
+import { IsNotEmpty } from 'class-validator';
 
 @Entity({
   name: 'business',
@@ -55,6 +56,7 @@ export class BusinessEntity extends EntityRelationalHelper {
   flyer?: FileEntity | null;
 
   @ManyToOne(() => MemberEntity, { eager: false, nullable: false })
+  @IsNotEmpty()
   @JoinColumn({ name: 'ownerId' }) // The legal owner
   owner?: MemberEntity;
 
@@ -62,9 +64,12 @@ export class BusinessEntity extends EntityRelationalHelper {
   @JoinColumn({ name: 'managerId' }) // The person managing the listing
   manager?: MemberEntity;
 
-  @OneToOne(() => ContactEntity, { eager: false, nullable: false })
-  @JoinColumn({ name: 'contactId' }) // Directly implements your #contactId requirement
-  contact!: ContactEntity;
+  // @OneToOne(() => ContactEntity, { eager: false, nullable: false })
+  // @JoinColumn({ name: 'contactId' }) // Directly implements your #contactId requirement
+  // contact!: ContactEntity;
+
+  @ManyToOne(() => ContactEntity)
+  contact: ContactEntity;
 
   @ManyToOne(() => ServiceEntity, { eager: false, nullable: true })
   service?: ServiceEntity | null;

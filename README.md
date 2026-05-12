@@ -99,7 +99,7 @@ npm run seed:run:relational
 npm run start:dev
 
 
-8- Open http://localhost:3000/docs in Browser
+8- Open http://127.0.0.1:3000/docs in Browser
 
 
 

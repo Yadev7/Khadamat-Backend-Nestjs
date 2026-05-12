@@ -24,6 +24,11 @@ import {
 } from 'class-transformer';
 
 export class CreateAddressDto {
+  @ApiProperty({ required: false, example: 'uuid-here' })
+  @IsOptional()
+  @IsString()
+  id?: string; // Add this line
+
   @ApiProperty({
     required: false,
     type: () => LocalisationDto,

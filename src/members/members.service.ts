@@ -1,14 +1,10 @@
 import { UsersService } from '../users/users.service';
 import { User } from '../users/domain/user';
-
 import { EntreprisesService } from '../entreprises/entreprises.service';
 import { Entreprise } from '../entreprises/domain/entreprise';
-
 import { ContactsService } from '../contacts/contacts.service';
 import { Contact } from '../contacts/domain/contact';
-
 import {
-  // common
   Injectable,
   HttpStatus,
   UnprocessableEntityException,
@@ -23,85 +19,227 @@ import { Member } from './domain/member';
 export class MembersService {
   constructor(
     private readonly userService: UsersService,
-
     private readonly entrepriseService: EntreprisesService,
-
     private readonly contactService: ContactsService,
-
-    // Dependencies here
     private readonly memberRepository: MemberRepository,
   ) {}
 
+  // async create(createMemberDto: CreateMemberDto) {
+  //   let user: User | null | undefined = undefined;
+
+  //   // Use type assertion to handle the 'user' property if it's not in the DTO
+  //   const dtoUser = (createMemberDto as any).user;
+  //   if (dtoUser && dtoUser.id) {
+  //     const userObject = await this.userService.findById(dtoUser.id);
+  //     if (!userObject) {
+  //       throw new UnprocessableEntityException({
+  //         status: HttpStatus.UNPROCESSABLE_ENTITY,
+  //         errors: { user: 'notExists' },
+  //       });
+  //     }
+  //     user = userObject;
+  //   }
+
+  //   let entreprise: Entreprise | null | undefined = undefined;
+  //   if (createMemberDto.entreprise) {
+  //     const entId = (createMemberDto.entreprise as any).id;
+  //     if (entId) {
+  //       const entrepriseObject = await this.entrepriseService.findById(entId);
+  //       if (!entrepriseObject) {
+  //         throw new UnprocessableEntityException({
+  //           status: HttpStatus.UNPROCESSABLE_ENTITY,
+  //           errors: { entreprise: 'notExists' },
+  //         });
+  //       }
+  //       entreprise = entrepriseObject;
+  //     }
+  //   }
+
+  //   let contact: Contact | null | undefined = undefined;
+  //   if (createMemberDto.contact) {
+  //     const contactId = (createMemberDto.contact as any).id;
+  //     if (contactId) {
+  //       const contactObject = await this.contactService.findById(contactId);
+  //       if (!contactObject) {
+  //         throw new UnprocessableEntityException({
+  //           status: HttpStatus.UNPROCESSABLE_ENTITY,
+  //           errors: { contact: 'notExists' },
+  //         });
+  //       }
+  //       contact = contactObject;
+  //     } else {
+  //       // Create the contact if no ID is passed
+  //       contact = await this.contactService.create(createMemberDto.contact as any);
+  //     }
+  //   }
+
+  //   return this.memberRepository.create({
+  //     user,
+  //     entreprise,
+  //     contact,
+  //     typeMember: createMemberDto.typeMember,
+  //   });
+  // }
+
+  // async create(createMemberDto: CreateMemberDto) {
+  //   let user: User | null | undefined = undefined;
+
+  //   const dtoUser = (createMemberDto as any).user;
+  //   if (dtoUser) {
+  //     if (dtoUser.id) {
+  //       // Logic for existing user
+  //       const userObject = await this.userService.findById(dtoUser.id);
+  //       if (!userObject) {
+  //         throw new UnprocessableEntityException({
+  //           status: HttpStatus.UNPROCESSABLE_ENTITY,
+  //           errors: { user: 'notExists' },
+  //         });
+  //       }
+  //       user = userObject;
+  //     } else {
+  //       // --- THE FIX: Create NEW user automatically ---
+  //       // We pass the user data (email, photo, etc.) to the UserService
+  //       user = await this.userService.create({
+  //         email: dtoUser.email,
+  //         password: 'DefaultPassword123!', // You should probably send a random one or use a "Welcome" password
+  //         role: { id: 2 }, // Default 'User' role ID
+  //         status: { id: 1 }, // Default 'Active' status ID
+  //         photo: dtoUser.photo, // Links the photo uploaded from frontend
+  //       });
+  //     }
+  //   }
+
+  //   // ... (Keep your existing Entreprise logic)
+
+  //   let contact: Contact | null | undefined = undefined;
+  //   if (createMemberDto.contact) {
+  //     const contactId = (createMemberDto.contact as any).id;
+  //     if (contactId) {
+  //       const contactObject = await this.contactService.findById(contactId);
+  //       if (!contactObject) {
+  //         throw new UnprocessableEntityException({
+  //           status: HttpStatus.UNPROCESSABLE_ENTITY,
+  //           errors: { contact: 'notExists' },
+  //         });
+  //       }
+  //       contact = contactObject;
+  //     } else {
+  //       // Automatically creates contact (and address)
+  //       contact = await this.contactService.create(createMemberDto.contact as any);
+  //     }
+  //   }
+
+  //   return this.memberRepository.create({
+  //     user, // Now guaranteed to have a value!
+  //     contact,
+  //     typeMember: createMemberDto.typeMember,
+  //   });
+  // }
+
+  // members.service.ts
+
   async create(createMemberDto: CreateMemberDto) {
-    // Do not remove comment below.
-    // <creating-property />
+    let user: User | null = null;
+    let entreprise: Entreprise | null = null;
+
+    // 1. Logic for INDIVIDUAL
+    if (createMemberDto.typeMember === 'INDIVIDUAL') {
+      // Create the User (Login account)
+      const dtoUser = (createMemberDto as any).user;
+      user = await this.userService.create({
+        email: dtoUser.email,
+        password: 'DefaultPassword123!',
+        role: { id: 2 },
+        status: { id: 1 },
+      });
+      // Ensure entreprise stays null
+      entreprise = null;
+    }
+
+    // 2. Logic for ENTERPRISE
+    else if (createMemberDto.typeMember === 'ENTERPRISE') {
+      // Create the Enterprise record
+      entreprise = await this.entrepriseService.create(
+        createMemberDto.entreprise,
+      );
+      // Ensure user stays null (or link a representative if needed)
+      user = null;
+    }
+
+    // 3. Always create the Contact
+    const contact = await this.contactService.create(createMemberDto.contact);
+
+    return this.memberRepository.create({
+      typeMember: createMemberDto.typeMember,
+      user,
+      entreprise,
+      contact,
+    });
+  }
+
+  async update(id: Member['id'], updateMemberDto: UpdateMemberDto) {
     let user: User | null | undefined = undefined;
 
-    if (createMemberDto.user) {
-      const userObject = await this.userService.findById(
-        createMemberDto.user.id,
-      );
-      if (!userObject) {
-        throw new UnprocessableEntityException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          errors: {
-            user: 'notExists',
-          },
-        });
+    const dtoUser = (updateMemberDto as any).user;
+    if (dtoUser) {
+      if (dtoUser.id) {
+        const userObject = await this.userService.findById(dtoUser.id);
+        if (!userObject) {
+          throw new UnprocessableEntityException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            errors: { user: 'notExists' },
+          });
+        }
+        user = userObject;
       }
-      user = userObject;
-    } else if (createMemberDto.user === null) {
+    } else if (dtoUser === null) {
       user = null;
     }
 
     let entreprise: Entreprise | null | undefined = undefined;
-
-    if (createMemberDto.entreprise) {
-      const entrepriseObject = await this.entrepriseService.findById(
-        createMemberDto.entreprise.id,
-      );
-      if (!entrepriseObject) {
-        throw new UnprocessableEntityException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          errors: {
-            entreprise: 'notExists',
-          },
-        });
+    if (updateMemberDto.entreprise) {
+      const entId = (updateMemberDto.entreprise as any).id;
+      if (entId) {
+        const entrepriseObject = await this.entrepriseService.findById(entId);
+        if (!entrepriseObject) {
+          throw new UnprocessableEntityException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            errors: { entreprise: 'notExists' },
+          });
+        }
+        entreprise = entrepriseObject;
       }
-      entreprise = entrepriseObject;
-    } else if (createMemberDto.entreprise === null) {
+    } else if (updateMemberDto.entreprise === null) {
       entreprise = null;
     }
 
     let contact: Contact | null | undefined = undefined;
-
-    if (createMemberDto.contact) {
-      const contactObject = await this.contactService.findById(
-        createMemberDto.contact.id,
-      );
-      if (!contactObject) {
-        throw new UnprocessableEntityException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          errors: {
-            contact: 'notExists',
-          },
-        });
+    if (updateMemberDto.contact) {
+      const contactId = (updateMemberDto.contact as any).id;
+      if (contactId) {
+        const contactObject = await this.contactService.findById(contactId);
+        if (!contactObject) {
+          throw new UnprocessableEntityException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            errors: { contact: 'notExists' },
+          });
+        }
+        contact = contactObject;
+      } else {
+        contact = await this.contactService.create(
+          updateMemberDto.contact as any,
+        );
       }
-      contact = contactObject;
-    } else if (createMemberDto.contact === null) {
+    } else if (updateMemberDto.contact === null) {
       contact = null;
     }
 
-    return this.memberRepository.create({
-      // Do not remove comment below.
-      // <creating-property-payload />
+    return this.memberRepository.update(id, {
       user,
-
       entreprise,
-
       contact,
-
-      typeMember: createMemberDto.typeMember,
+      typeMember: updateMemberDto.typeMember,
+      status: updateMemberDto.status,
     });
   }
 
@@ -124,83 +262,6 @@ export class MembersService {
 
   findByIds(ids: Member['id'][]) {
     return this.memberRepository.findByIds(ids);
-  }
-
-  async update(
-    id: Member['id'],
-
-    updateMemberDto: UpdateMemberDto,
-  ) {
-    // Do not remove comment below.
-    // <updating-property />
-    let user: User | null | undefined = undefined;
-
-    if (updateMemberDto.user) {
-      const userObject = await this.userService.findById(
-        updateMemberDto.user.id,
-      );
-      if (!userObject) {
-        throw new UnprocessableEntityException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          errors: {
-            user: 'notExists',
-          },
-        });
-      }
-      user = userObject;
-    } else if (updateMemberDto.user === null) {
-      user = null;
-    }
-
-    let entreprise: Entreprise | null | undefined = undefined;
-
-    if (updateMemberDto.entreprise) {
-      const entrepriseObject = await this.entrepriseService.findById(
-        updateMemberDto.entreprise.id,
-      );
-      if (!entrepriseObject) {
-        throw new UnprocessableEntityException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          errors: {
-            entreprise: 'notExists',
-          },
-        });
-      }
-      entreprise = entrepriseObject;
-    } else if (updateMemberDto.entreprise === null) {
-      entreprise = null;
-    }
-
-    let contact: Contact | null | undefined = undefined;
-
-    if (updateMemberDto.contact) {
-      const contactObject = await this.contactService.findById(
-        updateMemberDto.contact.id,
-      );
-      if (!contactObject) {
-        throw new UnprocessableEntityException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          errors: {
-            contact: 'notExists',
-          },
-        });
-      }
-      contact = contactObject;
-    } else if (updateMemberDto.contact === null) {
-      contact = null;
-    }
-
-    return this.memberRepository.update(id, {
-      // Do not remove comment below.
-      // <updating-property-payload />
-      user,
-
-      entreprise,
-
-      contact,
-
-      typeMember: updateMemberDto.typeMember,
-    });
   }
 
   remove(id: Member['id']) {

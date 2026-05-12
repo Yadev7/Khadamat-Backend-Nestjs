@@ -10,8 +10,10 @@ export abstract class BusinessRepository {
 
   abstract findAllWithPagination({
     paginationOptions,
+    filterOptions,
   }: {
     paginationOptions: IPaginationOptions;
+    filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
   }): Promise<Business[]>;
 
   abstract findById(id: Business['id']): Promise<NullableType<Business>>;

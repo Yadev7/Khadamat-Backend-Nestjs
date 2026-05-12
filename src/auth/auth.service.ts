@@ -32,6 +32,7 @@ import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 
 @Injectable()
 export class AuthService {
+  logger: any;
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,

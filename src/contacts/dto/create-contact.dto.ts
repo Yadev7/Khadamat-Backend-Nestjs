@@ -1,91 +1,54 @@
-import { AddressDto } from '../../addresses/dto/address.dto';
-
+import { CreateAddressDto } from '../../addresses/dto/create-address.dto'; // Ensure this path is correct
 import {
-  // decorators here
-
   IsString,
   IsOptional,
   IsNumber,
   ValidateNested,
-  IsNotEmptyObject,
 } from 'class-validator';
-
-import {
-  // decorators here
-  ApiProperty,
-} from '@nestjs/swagger';
-
-import {
-  // decorators here
-  Type,
-} from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type, Transform } from 'class-transformer'; // Added Transform here
 
 export class CreateContactDto {
-  @ApiProperty({
-    required: false,
-    type: () => AddressDto,
-  })
+  @ApiProperty({ required: false, type: () => CreateAddressDto })
   @IsOptional()
   @ValidateNested()
-  @Type(() => AddressDto)
-  @IsNotEmptyObject()
-  address?: AddressDto | null;
+  @Type(() => CreateAddressDto)
+  address?: CreateAddressDto | null;
 
-  @ApiProperty({
-    required: false,
-    type: () => String,
-  })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   email?: string | null;
 
-  @ApiProperty({
-    required: false,
-    type: () => Number,
-  })
+  @ApiProperty({ required: false, example: 212537000000 }) // Keep ApiProperty so it shows in Swagger
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => (value ? Number(value) : null)) // Handles null/empty safely
   phoneGround?: number | null;
 
-  @ApiProperty({
-    required: false,
-    type: () => Number,
-  })
+  @ApiProperty({ required: false, example: 212661000000 }) // Keep ApiProperty so it shows in Swagger
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => (value ? Number(value) : null))
   phoneCell?: number | null;
 
-  @ApiProperty({
-    required: false,
-    type: () => String,
-  })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   lastNameAr?: string | null;
 
-  @ApiProperty({
-    required: false,
-    type: () => String,
-  })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   lastName?: string | null;
 
-  @ApiProperty({
-    required: false,
-    type: () => String,
-  })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   firstNameAr?: string | null;
 
-  @ApiProperty({
-    required: false,
-    type: () => String,
-  })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   firstName?: string | null;
-
-  // Don't forget to use the class-validator decorators in the DTO properties.
 }

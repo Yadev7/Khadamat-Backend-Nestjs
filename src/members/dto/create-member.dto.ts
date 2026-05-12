@@ -1,66 +1,72 @@
-import { UserDto } from '../../users/dto/user.dto';
-
-import { EntrepriseDto } from '../../entreprises/dto/entreprise.dto';
-
-import { ContactDto } from '../../contacts/dto/contact.dto';
-
 import {
-  // decorators here
-
   IsString,
   IsOptional,
   ValidateNested,
   IsNotEmptyObject,
+  IsEnum,
+  IsEmail,
+  IsObject,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { CreateContactDto } from '../../contacts/dto/create-contact.dto';
+import { CreateEntrepriseDto } from '../../entreprises/dto/create-entreprise.dto';
 
-import {
-  // decorators here
-  ApiProperty,
-} from '@nestjs/swagger';
+// Create a small internal DTO for the User part to allow email/photo nested creation
+class NestedUserDto {
+  @IsEmail()
+  email!: string;
 
-import {
-  // decorators here
-  Type,
-} from 'class-transformer';
+  @IsOptional()
+  @IsObject()
+  photo?: { id: string } | null;
+
+  @IsOptional()
+  id?: string | number;
+}
 
 export class CreateMemberDto {
   @ApiProperty({
     required: false,
-    type: () => UserDto,
+    type: () => NestedUserDto,
+    description: 'User details for INDIVIDUAL or existing User ID',
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => UserDto)
-  @IsNotEmptyObject()
-  user?: UserDto | null;
+  @Type(() => NestedUserDto)
+  user?: NestedUserDto | null;
 
   @ApiProperty({
     required: false,
-    type: () => EntrepriseDto,
+    type: () => CreateEntrepriseDto,
+    description: 'Enterprise details - Required only for ENTERPRISE type',
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => EntrepriseDto)
-  @IsNotEmptyObject()
-  entreprise?: EntrepriseDto | null;
+  @Type(() => CreateEntrepriseDto)
+  entreprise!: CreateEntrepriseDto;
 
-  @ApiProperty({
-    required: false,
-    type: () => ContactDto,
-  })
-  @IsOptional()
+  @ApiProperty({ required: true, type: () => CreateContactDto })
+  @IsNotEmptyObject()
   @ValidateNested()
-  @Type(() => ContactDto)
-  @IsNotEmptyObject()
-  contact?: ContactDto | null;
+  @Type(() => CreateContactDto)
+  contact!: CreateContactDto;
 
   @ApiProperty({
+    enum: ['INDIVIDUAL', 'ENTERPRISE'],
+    example: 'INDIVIDUAL',
+  })
+  @IsString()
+  @IsEnum(['INDIVIDUAL', 'ENTERPRISE'])
+  typeMember!: string;
+
+  @ApiProperty({
+    enum: ['ACTIVE', 'BLOCKED'],
     required: false,
-    type: () => String,
+    example: 'ACTIVE',
   })
   @IsOptional()
   @IsString()
-  typeMember?: string | null;
-
-  // Don't forget to use the class-validator decorators in the DTO properties.
+  @IsEnum(['ACTIVE', 'BLOCKED'])
+  status?: 'ACTIVE' | 'BLOCKED';
 }

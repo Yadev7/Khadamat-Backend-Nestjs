@@ -75,6 +75,10 @@ export class CitiesService {
       nameAr: createCityDto.nameAr,
 
       nameFr: createCityDto.nameFr,
+
+      lat: createCityDto.lat,
+
+      lng: createCityDto.lng,
     });
   }
 
@@ -156,6 +160,10 @@ export class CitiesService {
       nameAr: updateCityDto.nameAr,
 
       nameFr: updateCityDto.nameFr,
+
+      lat: updateCityDto.lat,
+
+      lng: updateCityDto.lng,
     });
   }
 

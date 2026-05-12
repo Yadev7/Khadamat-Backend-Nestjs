@@ -29,6 +29,13 @@ export class Member {
   typeMember?: string | null;
 
   @ApiProperty({
+    type: () => String,
+    enum: ['ACTIVE', 'BLOCKED'],
+    nullable: true,
+  })
+  status?: 'ACTIVE' | 'BLOCKED' | null;
+
+  @ApiProperty({
     type: String,
   })
   id?: string;

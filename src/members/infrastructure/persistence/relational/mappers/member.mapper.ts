@@ -29,6 +29,7 @@ export class MemberMapper {
     }
 
     domainEntity.typeMember = raw.typeMember;
+    domainEntity.status = raw.status ?? 'ACTIVE';
 
     domainEntity.id = raw.id as string;
     domainEntity.createdAt = raw.createdAt as Date;
@@ -62,6 +63,7 @@ export class MemberMapper {
     }
 
     persistenceEntity.typeMember = domainEntity.typeMember;
+    persistenceEntity.status = domainEntity.status ?? 'ACTIVE';
 
     if (domainEntity.id) {
       persistenceEntity.id = domainEntity.id as string;

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { FileRepository } from '../../persistence/file.repository';
 import { FileType } from '../../../domain/file';
+import { detectFileCategory } from 'src/files/utils/detect-file-category.util';
 
 @Injectable()
 export class FilesS3Service {
@@ -23,6 +24,8 @@ export class FilesS3Service {
     return {
       file: await this.fileRepository.create({
         path: file.key,
+        fileCategory: detectFileCategory(file.originalname), // ← ADD
+        fileDescription: null, // ← ADD
       }),
     };
   }

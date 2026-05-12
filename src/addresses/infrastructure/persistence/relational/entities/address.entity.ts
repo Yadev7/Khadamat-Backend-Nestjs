@@ -1,4 +1,5 @@
 import { LocalisationEntity } from '../../../../../localisations/infrastructure/persistence/relational/entities/localisation.entity';
+import { CityAreaEntity } from '../../../../../city-areas/infrastructure/persistence/relational/entities/city-area.entity';
 
 import { CityEntity } from '../../../../../cities/infrastructure/persistence/relational/entities/city.entity';
 import { CountryEntity } from '../../../../../countries/infrastructure/persistence/relational/entities/country.entity';
@@ -22,11 +23,21 @@ export class AddressEntity extends EntityRelationalHelper {
   @JoinColumn()
   localisation?: LocalisationEntity | null;
 
-  @ManyToOne(() => CityEntity, { eager: false, nullable: true })
+  @ManyToOne(() => CityEntity, { eager: false, nullable: true, onDelete: 'SET NULL' })
   city?: CityEntity | null;
 
-  @ManyToOne(() => CountryEntity, { eager: false, nullable: true })
-  country?: CountryEntity | null;
+  @ManyToOne(() => CityAreaEntity, { eager: false, nullable: true, onDelete: 'SET NULL' })
+  zone?: CityAreaEntity | null;
+
+  // @ManyToOne(() => CountryEntity, { eager: false, nullable: true })
+  // country?: CountryEntity | null;
+
+  @ManyToOne(() => CountryEntity, { 
+  eager: false, 
+  nullable: true, 
+  onDelete: 'SET NULL' // Add this line
+})
+country?: CountryEntity | null;
 
   @Column({
     nullable: true,

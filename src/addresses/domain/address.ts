@@ -1,5 +1,6 @@
 import { Localisation } from '../../localisations/domain/localisation';
 import { City } from '../../cities/domain/city';
+import { CityArea } from '../../city-areas/domain/city-area';
 import { Country } from '../../countries/domain/country';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -15,6 +16,12 @@ export class Address {
     nullable: true,
   })
   city?: City | null;
+
+  @ApiProperty({
+    type: () => CityArea,
+    nullable: true,
+  })
+  zone?: CityArea | null;
 
   @ApiProperty({
     type: () => Country,

@@ -18,6 +18,9 @@ export class CityMapper {
 
     domainEntity.nameFr = raw.nameFr;
 
+    domainEntity.lat = raw.lat;
+    domainEntity.lng = raw.lng;
+
     domainEntity.id = raw.id;
     domainEntity.createdAt = raw.createdAt;
     domainEntity.updatedAt = raw.updatedAt;
@@ -39,6 +42,9 @@ export class CityMapper {
     persistenceEntity.nameAr = domainEntity.nameAr;
 
     persistenceEntity.nameFr = domainEntity.nameFr;
+
+    persistenceEntity.lat = domainEntity.lat;
+    persistenceEntity.lng = domainEntity.lng;
 
     if (domainEntity.id) {
       persistenceEntity.id = domainEntity.id;

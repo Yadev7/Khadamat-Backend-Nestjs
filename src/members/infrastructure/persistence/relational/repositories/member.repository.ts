@@ -23,26 +23,63 @@ export class MemberRelationalRepository implements MemberRepository {
     return MemberMapper.toDomain(newEntity);
   }
 
-  async findAllWithPagination({
-    paginationOptions,
-  }: {
-    paginationOptions: IPaginationOptions;
-  }): Promise<Member[]> {
-    const entities = await this.memberRepository.find({
-      skip: (paginationOptions.page - 1) * paginationOptions.limit,
-      take: paginationOptions.limit,
-    });
 
-    return entities.map((entity) => MemberMapper.toDomain(entity));
-  }
+  
 
-  async findById(id: Member['id']): Promise<NullableType<Member>> {
-    const entity = await this.memberRepository.findOne({
-      where: { id },
-    });
+  // async findAllWithPagination({
+  //   paginationOptions,
+  // }: {
+  //   paginationOptions: IPaginationOptions;
+  // }): Promise<Member[]> {
+  //   const entities = await this.memberRepository.find({
+  //     skip: (paginationOptions.page - 1) * paginationOptions.limit,
+  //     take: paginationOptions.limit,
+  //   });
 
-    return entity ? MemberMapper.toDomain(entity) : null;
-  }
+  //   return entities.map((entity) => MemberMapper.toDomain(entity));
+  // }
+
+  // async findById(id: Member['id']): Promise<NullableType<Member>> {
+  //   const entity = await this.memberRepository.findOne({
+  //     where: { id },
+  //   });
+
+  //   return entity ? MemberMapper.toDomain(entity) : null;
+  // }
+
+
+  // member.repository.ts
+
+async findAllWithPagination({
+  paginationOptions,
+}: {
+  paginationOptions: IPaginationOptions;
+}): Promise<Member[]> {
+  const entities = await this.memberRepository.find({
+    skip: (paginationOptions.page - 1) * paginationOptions.limit,
+    take: paginationOptions.limit,
+    // --- THE FIX: Explicitly list relations here ---
+    relations: [
+      'user', 
+      'contact', 
+      'entreprise', 
+      'contact.address', 
+      'contact.address.city'
+    ],
+  });
+
+  return entities.map((entity) => MemberMapper.toDomain(entity));
+}
+
+async findById(id: Member['id']): Promise<NullableType<Member>> {
+  const entity = await this.memberRepository.findOne({
+    where: { id },
+    // --- Add relations here too ---
+    relations: ['user', 'contact', 'entreprise'],
+  });
+
+  return entity ? MemberMapper.toDomain(entity) : null;
+}
 
   async findByIds(ids: Member['id'][]): Promise<Member[]> {
     const entities = await this.memberRepository.find({

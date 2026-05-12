@@ -1,5 +1,4 @@
 import { CountryEntity } from '../../../../../countries/infrastructure/persistence/relational/entities/country.entity';
-
 import {
   CreateDateColumn,
   Entity,
@@ -14,29 +13,45 @@ import { EntityRelationalHelper } from '../../../../../utils/relational-entity-h
   name: 'city',
 })
 export class CityEntity extends EntityRelationalHelper {
-  @ManyToOne(() => CountryEntity, { eager: false, nullable: true })
-  country?: CountryEntity | null;
-
-  @Column({
-    nullable: true,
-    type: String,
-  })
-  nameEn?: string | null;
-
-  @Column({
-    nullable: true,
-    type: String,
-  })
-  nameAr?: string | null;
-
-  @Column({
-    nullable: true,
-    type: String,
-  })
-  nameFr?: string | null;
-
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @ManyToOne(() => CountryEntity, { eager: false, nullable: true, onDelete: 'CASCADE' })
+  country?: CountryEntity | null;
+
+  @Column({ nullable: true, type: String })
+  nameEn?: string | null;
+
+  @Column({ nullable: true, type: String })
+  nameAr?: string | null;
+
+  @Column({ nullable: true, type: String })
+  nameFr?: string | null;
+
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 8,
+    nullable: true,
+    // يضمن الـ transformer تحويل السلسلة النصية القادمة من DB إلى رقم تلقائياً
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
+  })
+  lat?: number | null;
+
+  @Column({
+    type: 'decimal',
+    precision: 11,
+    scale: 8,
+    nullable: true,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
+  })
+  lng?: number | null;
 
   @CreateDateColumn()
   createdAt!: Date;

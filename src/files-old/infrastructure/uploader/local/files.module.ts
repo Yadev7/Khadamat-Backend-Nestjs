@@ -1,0 +1,78 @@
+import {
+  HttpStatus,
+  Module,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { FilesLocalController } from './files.controller';
+import { MulterModule } from '@nestjs/platform-express';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { diskStorage } from 'multer';
+import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
+
+import { FilesLocalService } from './files.service';
+
+import { DocumentFilePersistenceModule } from '../../persistence/document/document-persistence.module';
+import { RelationalFilePersistenceModule } from '../../persistence/relational/relational-persistence.module';
+import { AllConfigType } from '../../../../config/config.type';
+import { DatabaseConfig } from '../../../../database/config/database-config.type';
+import databaseConfig from '../../../../database/config/database.config';
+
+// <database-block>
+const infrastructurePersistenceModule = (databaseConfig() as DatabaseConfig)
+  .isDocumentDatabase
+  ? DocumentFilePersistenceModule
+  : RelationalFilePersistenceModule;
+// </database-block>
+
+@Module({
+  imports: [
+    infrastructurePersistenceModule,
+    MulterModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService<AllConfigType>) => {
+        return {
+          fileFilter: (request, file, callback) => {
+            // Updated Regex to include common video formats (mp4, avi, mov, mkv)
+            if (
+              !file.originalname.match(/\.(jpg|jpeg|png|gif|mp4|mov|avi|mkv)$/i)
+            ) {
+              return callback(
+                new UnprocessableEntityException({
+                  status: HttpStatus.UNPROCESSABLE_ENTITY,
+                  errors: {
+                    file: `cantUploadFileType`,
+                  },
+                }),
+                false,
+              );
+            }
+            callback(null, true);
+          },
+          storage: diskStorage({
+            destination: './files',
+            filename: (request, file, callback) => {
+              const extension = file.originalname
+                .split('.')
+                .pop()
+                ?.toLowerCase();
+              callback(null, `${randomStringGenerator()}.${extension}`);
+            },
+          }),
+          limits: {
+            /** * Note: Ensure your config 'file.maxFileSize' or the fallback
+             * is large enough for videos (e.g., 50MB = 1024 * 1024 * 50)
+             */
+            fileSize:
+              configService.get('file.maxFileSize', { infer: true }) ||
+              1024 * 1024 * 50,
+          },
+        };
+      },
+    }),
+  ],
+  controllers: [FilesLocalController],
+  providers: [FilesLocalService],
+  exports: [FilesLocalService],
+})
+export class FilesLocalModule {}

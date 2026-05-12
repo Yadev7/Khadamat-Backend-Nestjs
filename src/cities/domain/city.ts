@@ -41,4 +41,6 @@ export class City {
 
   @ApiProperty()
   updatedAt?: Date;
+  lat: number | null | undefined;
+  lng: number | null | undefined;
 }

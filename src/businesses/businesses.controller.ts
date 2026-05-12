@@ -27,6 +27,7 @@ import {
 } from '../utils/dto/infinity-pagination-response.dto';
 import { infinityPagination } from '../utils/infinity-pagination';
 import { FindAllBusinessesDto } from './dto/find-all-businesses.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Businesses')
 @ApiBearerAuth()
@@ -46,31 +47,54 @@ export class BusinessesController {
     return this.businessesService.create(createBusinessDto);
   }
 
-  @Get()
-  @ApiOkResponse({
-    type: InfinityPaginationResponse(Business),
-  })
-  async findAll(
-    @Query() query: FindAllBusinessesDto,
-  ): Promise<InfinityPaginationResponseDto<Business>> {
-    const page = query?.page ?? 1;
-    let limit = query?.limit ?? 10;
-    if (limit > 50) {
-      limit = 50;
-    }
+  // @Get()
+  // @ApiOkResponse({
+  //   type: InfinityPaginationResponse(Business),
+  // })
+  // async findAll(
+  //   @Query() query: FindAllBusinessesDto,
+  // ): Promise<InfinityPaginationResponseDto<Business>> {
+  //   const page = query?.page ?? 1;
+  //   let limit = query?.limit ?? 10;
+  //   if (limit > 50) {
+  //     limit = 50;
+  //   }
 
-    return infinityPagination(
-      await this.businessesService.findAllWithPagination({
-        paginationOptions: {
-          page,
-          limit,
-        },
-      }),
-      { page, limit },
-    );
-  }
+  //   return infinityPagination(
+  //     await this.businessesService.findAllWithPagination({
+  //       paginationOptions: {
+  //         page,
+  //         limit,
+  //       },
+  //     }),
+  //     { page, limit },
+  //   );
+  // }
+
+  @Get()
+  @Public()
+async findAll(
+  @Query() query: FindAllBusinessesDto,
+): Promise<InfinityPaginationResponseDto<Business>> {
+  const page = query?.page ?? 1;
+  let limit = query?.limit ?? 10;
+  if (limit > 50) limit = 50;
+
+  return infinityPagination(
+    await this.businessesService.findAllWithPagination({
+      paginationOptions: { page, limit },
+      filterOptions: {
+        cityId: query.cityId,
+        zoneId: query.zoneId,
+        serviceId: query.service, // Map 'service' from query to serviceId
+      },
+    }),
+    { page, limit },
+  );
+}
 
   @Get(':id')
+  @Public()
   @ApiParam({
     name: 'id',
     type: String,

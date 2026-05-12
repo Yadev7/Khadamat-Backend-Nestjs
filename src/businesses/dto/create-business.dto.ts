@@ -163,6 +163,17 @@ export class CreateBusinessDto {
   @ValidateNested()
   @Type(() => FileDto)
   flyer?: FileDto | null;
+  @ApiProperty({ type: () => FileDto, nullable: true })
+  @IsOptional()
+  videoAr?: FileDto | null;
+
+  @ApiProperty({ type: () => FileDto, nullable: true })
+  @IsOptional()
+  videoFr?: FileDto | null;
+
+  @ApiProperty({ type: () => FileDto, nullable: true })
+  @IsOptional()
+  videoEn?: FileDto | null;
 
   // Don't forget to use the class-validator decorators in the DTO properties.
 }

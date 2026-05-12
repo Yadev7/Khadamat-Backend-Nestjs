@@ -1,39 +1,41 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FileEntity } from '../entities/file.entity';
 import { In, Repository } from 'typeorm';
-import { FileRepository } from '../../file.repository';
-
-import { FileMapper } from '../mappers/file.mapper';
+import { FileEntity } from '../entities/file.entity';
 import { FileType } from '../../../../domain/file';
-import { NullableType } from '../../../../../utils/types/nullable.type';
+import { FileRepository } from '../../file.repository';
+import { FileMapper } from '../mappers/file.mapper';
+import { FileCategory } from '../../../../file-category.enum';
 
 @Injectable()
-export class FileRelationalRepository implements FileRepository {
+export class FilesRelationalRepository implements FileRepository {
   constructor(
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
   ) {}
 
-  async create(data: FileType): Promise<FileType> {
-    const persistenceModel = FileMapper.toPersistence(data);
-    const entity = await this.fileRepository.save(
-      this.fileRepository.create(persistenceModel),
-    );
-
-    return FileMapper.toDomain(entity);
+  async create(data: Omit<FileType, 'id'>): Promise<FileType> {
+    const entity = this.fileRepository.create({
+      path: data.path,
+      fileCategory: data.fileCategory,
+      fileDescription: data.fileDescription ?? null,
+    });
+    const saved = await this.fileRepository.save(entity);
+    return FileMapper.toDomain(saved);
   }
 
-  async findById(id: FileType['id']): Promise<NullableType<FileType>> {
-    const entity = await this.fileRepository.findOne({
-      where: {
-        id: id,
-      },
-    });
-
+  async findById(id: FileType['id']): Promise<FileType | null> {
+    const entity = await this.fileRepository.findOne({ where: { id } });
     return entity ? FileMapper.toDomain(entity) : null;
   }
 
+  // NEW
+  async findByCategory(category: FileCategory): Promise<FileType[]> {
+    const entities = await this.fileRepository.find({
+      where: { fileCategory: category },
+    });
+    return entities.map(FileMapper.toDomain);
+  }
   async findByIds(ids: FileType['id'][]): Promise<FileType[]> {
     const entities = await this.fileRepository.find({
       where: {

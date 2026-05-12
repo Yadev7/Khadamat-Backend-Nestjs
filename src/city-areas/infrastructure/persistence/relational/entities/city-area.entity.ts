@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
   Column,
   ManyToOne,
+  JoinColumn
 } from 'typeorm';
 import { EntityRelationalHelper } from '../../../../../utils/relational-entity-helper';
 
@@ -19,8 +20,15 @@ export class CityAreaEntity extends EntityRelationalHelper {
   @ManyToOne(() => LocalisationEntity, { eager: false, nullable: true })
   localisation?: LocalisationEntity | null;
 
-  @ManyToOne(() => CityEntity, { eager: false, nullable: true })
-  city?: CityEntity | null;
+  // @ManyToOne(() => CityEntity, { eager: false, nullable: true, onDelete: 'CASCADE' })
+  // city?: CityEntity | null;
+
+  @Column({ nullable: true })
+cityId: string; // This will map to the actual UUID in the database
+
+@ManyToOne(() => CityEntity, { eager: false, nullable: true, onDelete: 'CASCADE' })
+@JoinColumn({ name: 'cityId' }) // Link them explicitly
+city?: CityEntity | null;
 
   @Column({
     nullable: true,

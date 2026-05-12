@@ -5,5 +5,5 @@ export class ContactDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  id: string;
+  id?: string;
 }

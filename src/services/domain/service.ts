@@ -6,6 +6,12 @@ export class Service {
     type: () => FileType,
     nullable: true,
   })
+  video?: FileType | null;
+
+  @ApiProperty({
+    type: () => FileType,
+    nullable: true,
+  })
   image?: FileType | null;
 
   @ApiProperty({

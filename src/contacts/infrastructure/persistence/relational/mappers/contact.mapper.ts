@@ -43,19 +43,19 @@ export class ContactMapper {
       persistenceEntity.address = null;
     }
 
-    persistenceEntity.email = domainEntity.email;
+    persistenceEntity.email = domainEntity.email ?? null;
 
-    persistenceEntity.phoneGround = domainEntity.phoneGround;
+    persistenceEntity.phoneGround = domainEntity.phoneGround ?? null;
 
-    persistenceEntity.phoneCell = domainEntity.phoneCell;
+    persistenceEntity.phoneCell = domainEntity.phoneCell ?? null;
 
-    persistenceEntity.lastNameAr = domainEntity.lastNameAr;
+    persistenceEntity.lastNameAr = domainEntity.lastNameAr ?? null;
 
-    persistenceEntity.lastName = domainEntity.lastName;
+    persistenceEntity.lastName = domainEntity.lastName ?? null;
 
-    persistenceEntity.firstNameAr = domainEntity.firstNameAr;
+    persistenceEntity.firstNameAr = domainEntity.firstNameAr ?? null;
 
-    persistenceEntity.firstName = domainEntity.firstName;
+    persistenceEntity.firstName = domainEntity.firstName ?? null;
 
     if (domainEntity.id) {
       persistenceEntity.id = domainEntity.id;

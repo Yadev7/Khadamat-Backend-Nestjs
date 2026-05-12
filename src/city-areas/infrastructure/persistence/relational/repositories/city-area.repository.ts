@@ -23,18 +23,37 @@ export class CityAreaRelationalRepository implements CityAreaRepository {
     return CityAreaMapper.toDomain(newEntity);
   }
 
-  async findAllWithPagination({
-    paginationOptions,
-  }: {
-    paginationOptions: IPaginationOptions;
-  }): Promise<CityArea[]> {
-    const entities = await this.cityAreaRepository.find({
-      skip: (paginationOptions.page - 1) * paginationOptions.limit,
-      take: paginationOptions.limit,
-    });
+  // async findAllWithPagination({
+  //   paginationOptions,
+  // }: {
+  //   paginationOptions: IPaginationOptions;
+  // }): Promise<CityArea[]> {
+  //   const entities = await this.cityAreaRepository.find({
+  //     skip: (paginationOptions.page - 1) * paginationOptions.limit,
+  //     take: paginationOptions.limit,
+  //   });
 
-    return entities.map((entity) => CityAreaMapper.toDomain(entity));
-  }
+  //   return entities.map((entity) => CityAreaMapper.toDomain(entity));
+  // }
+
+  // src/city-areas/infrastructure/persistence/relational/repositories/city-area.repository.ts
+
+async findAllWithPagination({
+  paginationOptions,
+}: {
+  paginationOptions: IPaginationOptions;
+}): Promise<CityArea[]> {
+  // هنا المستودع يمتلك الصلاحية للوصول لـ TypeORM
+  const entities = await this.cityAreaRepository.find({
+    skip: (paginationOptions.page - 1) * paginationOptions.limit,
+    take: paginationOptions.limit,
+    // --- هذا هو السطر المطلوب لحل مشكلة المناطق الفارغة ---
+    relations: ['city'], 
+  });
+
+  // الماپر يحول الكائنات من شكل قاعدة البيانات إلى شكل التطبيق
+  return entities.map((entity) => CityAreaMapper.toDomain(entity));
+}
 
   async findById(id: CityArea['id']): Promise<NullableType<CityArea>> {
     const entity = await this.cityAreaRepository.findOne({

@@ -3,6 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config'; // تأكد من استيراد هادو
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AnonymousStrategy } from './strategies/anonymous.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
@@ -16,7 +17,19 @@ import { UsersModule } from '../users/users.module';
     SessionModule,
     PassportModule,
     MailModule,
-    JwtModule.register({}),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        // إضافة 'as string' أو علامة التعجب للتأكيد
+        secret: configService.get<string>('AUTH_JWT_SECRET'),
+        signOptions: {
+          // الحل هنا: نستخدم Type Casting لـ 'any' أو 'StringValue' 
+          // ليتوافق مع توقعات مكتبة JWT
+          expiresIn: configService.get<string>('AUTH_JWT_TOKEN_EXPIRES_IN') as any || '1d',
+        },
+      }),
+    }),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtRefreshStrategy, AnonymousStrategy],

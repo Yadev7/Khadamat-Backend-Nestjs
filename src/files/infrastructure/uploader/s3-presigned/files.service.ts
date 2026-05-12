@@ -13,6 +13,7 @@ import { randomStringGenerator } from '@nestjs/common/utils/random-string-genera
 import { ConfigService } from '@nestjs/config';
 import { FileType } from '../../../domain/file';
 import { AllConfigType } from '../../../../config/config.type';
+import { detectFileCategory } from 'src/files/utils/detect-file-category.util';
 
 @Injectable()
 export class FilesS3PresignedService {
@@ -84,6 +85,8 @@ export class FilesS3PresignedService {
     const signedUrl = await getSignedUrl(this.s3, command, { expiresIn: 3600 });
     const data = await this.fileRepository.create({
       path: key,
+      fileCategory: detectFileCategory(file.fileName), // ← ADD
+      fileDescription: null, // ← ADD
     });
 
     return {

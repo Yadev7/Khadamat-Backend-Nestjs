@@ -1,5 +1,6 @@
 import { Address } from '../../../../domain/address';
 import { CityMapper } from '../../../../../cities/infrastructure/persistence/relational/mappers/city.mapper';
+import { CityAreaMapper } from '../../../../../city-areas/infrastructure/persistence/relational/mappers/city-area.mapper';
 import { LocalisationMapper } from '../../../../../localisations/infrastructure/persistence/relational/mappers/localisation.mapper';
 
 import { CountryMapper } from '../../../../../countries/infrastructure/persistence/relational/mappers/country.mapper';
@@ -19,6 +20,12 @@ export class AddressMapper {
       domainEntity.city = CityMapper.toDomain(raw.city);
     } else if (raw.city === null) {
       domainEntity.city = null;
+    }
+
+    if (raw.zone) {
+      domainEntity.zone = CityAreaMapper.toDomain(raw.zone);
+    } else if (raw.zone === null) {
+      domainEntity.zone = null;
     }
 
     if (raw.country) {
@@ -52,6 +59,12 @@ export class AddressMapper {
       persistenceEntity.city = CityMapper.toPersistence(domainEntity.city);
     } else if (domainEntity.city === null) {
       persistenceEntity.city = null;
+    }
+
+    if (domainEntity.zone) {
+      persistenceEntity.zone = CityAreaMapper.toPersistence(domainEntity.zone);
+    } else if (domainEntity.zone === null) {
+      persistenceEntity.zone = null;
     }
 
     if (domainEntity.country) {

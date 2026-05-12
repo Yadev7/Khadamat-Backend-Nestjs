@@ -13,6 +13,7 @@ import { IPaginationOptions } from '../utils/types/pagination-options';
 import { CityArea } from './domain/city-area';
 import { City } from '../cities/domain/city'; // Make sure to import the City domain
 
+
 @Injectable()
 export class CityAreasService {
   constructor(
@@ -71,6 +72,24 @@ export class CityAreasService {
       nameFr: createCityAreaDto.nameFr,
     });
   }
+
+  // findAllWithPagination({
+  //   paginationOptions,
+  // }: {
+  //   paginationOptions: IPaginationOptions;
+  // }) {
+  //   return this.cityAreaRepository.findAllWithPagination({
+  //     paginationOptions: {
+  //       page: paginationOptions.page,
+  //       limit: paginationOptions.limit,
+  //     },
+  //   });
+  // }
+
+
+  // src/city-areas/infrastructure/persistence/relational/repositories/city-area.repository.ts
+
+  // src/city-areas/city-areas.service.ts
 
   findAllWithPagination({
     paginationOptions,

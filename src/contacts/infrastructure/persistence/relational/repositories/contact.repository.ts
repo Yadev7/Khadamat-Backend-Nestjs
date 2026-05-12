@@ -13,7 +13,11 @@ export class ContactRelationalRepository implements ContactRepository {
   constructor(
     @InjectRepository(ContactEntity)
     private readonly contactRepository: Repository<ContactEntity>,
-  ) {}
+  ) { }
+  contactEntityRepository: any;
+  find(arg0: { skip: number; take: number; relations: string[]; }): void {
+    throw new Error('Method not implemented.');
+  }
 
   async create(data: Contact): Promise<Contact> {
     const persistenceModel = ContactMapper.toPersistence(data);
@@ -23,6 +27,19 @@ export class ContactRelationalRepository implements ContactRepository {
     return ContactMapper.toDomain(newEntity);
   }
 
+  // async findAllWithPagination({
+  //   paginationOptions,
+  // }: {
+  //   paginationOptions: IPaginationOptions;
+  // }): Promise<Contact[]> {
+  //   const entities = await this.contactRepository.find({
+  //     skip: (paginationOptions.page - 1) * paginationOptions.limit,
+  //     take: paginationOptions.limit,
+  //   });
+
+  //   return entities.map((entity) => ContactMapper.toDomain(entity));
+  // }
+
   async findAllWithPagination({
     paginationOptions,
   }: {
@@ -31,6 +48,8 @@ export class ContactRelationalRepository implements ContactRepository {
     const entities = await this.contactRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      // CRITICAL: Add this line to include the address object
+      relations: ['address'],
     });
 
     return entities.map((entity) => ContactMapper.toDomain(entity));

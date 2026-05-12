@@ -28,20 +28,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MongooseConfigService } from './database/mongoose-config.service';
 import { DatabaseConfig } from './database/config/database-config.type';
 
-// <database-block>
-const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
-  .isDocumentDatabase
-  ? MongooseModule.forRootAsync({
-      useClass: MongooseConfigService,
-    })
-  : TypeOrmModule.forRootAsync({
-      useClass: TypeOrmConfigService,
-      dataSourceFactory: async (options: DataSourceOptions | undefined) => {
-        return new DataSource(options as DataSourceOptions).initialize();
-      },
-    });
-// </database-block>
-
 import { CountriesModule } from './countries/countries.module';
 
 import { CitiesModule } from './cities/cities.module';
@@ -49,8 +35,6 @@ import { CitiesModule } from './cities/cities.module';
 import { LocalisationsModule } from './localisations/localisations.module';
 
 import { CityAreasModule } from './city-areas/city-areas.module';
-
-import { ServicesModule } from './services/services.module';
 
 import { AddressesModule } from './addresses/addresses.module';
 
@@ -72,8 +56,32 @@ import { CallsModule } from './calls/calls.module';
 
 import { MessagesModule } from './messages/messages.module';
 
+// <database-block>
+const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
+  .isDocumentDatabase
+  ? MongooseModule.forRootAsync({
+      useClass: MongooseConfigService,
+    })
+  : TypeOrmModule.forRootAsync({
+      useClass: TypeOrmConfigService,
+      dataSourceFactory: async (options: DataSourceOptions | undefined) => {
+        return new DataSource({
+          ...options,
+          verboseRetryLog: true,
+          logging: ['error', 'schema'],
+        } as unknown as DataSourceOptions).initialize();
+      },
+    });
+// </database-block>
+
+import { ServicesModule } from './services/services.module';
+
+import { SelectedBusinessesModule } from './selected-businesses/selected-businesses.module';
+
 @Module({
   imports: [
+    SelectedBusinessesModule,
+    ServicesModule,
     MessagesModule,
     CallsModule,
     ReportsModule,
@@ -110,6 +118,7 @@ import { MessagesModule } from './messages/messages.module';
           infer: true,
         }),
         loaderOptions: { path: path.join(__dirname, '/i18n/'), watch: true },
+        verboseRetryLog: true,
       }),
       resolvers: [
         {
@@ -124,6 +133,7 @@ import { MessagesModule } from './messages/messages.module';
           inject: [ConfigService],
         },
       ],
+
       imports: [ConfigModule],
       inject: [ConfigService],
     }),

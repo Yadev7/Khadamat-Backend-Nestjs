@@ -10,19 +10,10 @@ import { diskStorage } from 'multer';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 
 import { FilesLocalService } from './files.service';
-
-import { DocumentFilePersistenceModule } from '../../persistence/document/document-persistence.module';
 import { RelationalFilePersistenceModule } from '../../persistence/relational/relational-persistence.module';
 import { AllConfigType } from '../../../../config/config.type';
-import { DatabaseConfig } from '../../../../database/config/database-config.type';
-import databaseConfig from '../../../../database/config/database.config';
 
-// <database-block>
-const infrastructurePersistenceModule = (databaseConfig() as DatabaseConfig)
-  .isDocumentDatabase
-  ? DocumentFilePersistenceModule
-  : RelationalFilePersistenceModule;
-// </database-block>
+const infrastructurePersistenceModule = RelationalFilePersistenceModule;
 
 @Module({
   imports: [
@@ -33,7 +24,11 @@ const infrastructurePersistenceModule = (databaseConfig() as DatabaseConfig)
       useFactory: (configService: ConfigService<AllConfigType>) => {
         return {
           fileFilter: (request, file, callback) => {
-            if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
+            if (
+              !file.originalname.match(
+                /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff|ico|mp4|avi|mov|mkv|webm|flv|wmv|m4v|mp3|wav|ogg|flac|aac|m4a|wma|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|odt|zip|rar|tar|gz|7z|bz2)$/i,
+              )
+            ) {
               return callback(
                 new UnprocessableEntityException({
                   status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -60,7 +55,8 @@ const infrastructurePersistenceModule = (databaseConfig() as DatabaseConfig)
             },
           }),
           limits: {
-            fileSize: configService.get('file.maxFileSize', { infer: true }),
+            fileSize: 100 * 1024 * 1024,
+            // fileSize: configService.get('file.maxFileSize', { infer: true }),
           },
         };
       },
@@ -70,4 +66,4 @@ const infrastructurePersistenceModule = (databaseConfig() as DatabaseConfig)
   providers: [ConfigModule, ConfigService, FilesLocalService],
   exports: [FilesLocalService],
 })
-export class FilesLocalModule {}
+export class FilesLocalModule { }

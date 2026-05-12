@@ -1,11 +1,12 @@
 import { User } from '../../../../domain/user';
 import { UserSchemaClass } from '../entities/user.schema';
-import { FileSchemaClass } from '../../../../../files/infrastructure/persistence/document/entities/file.schema';
-import { FileMapper } from '../../../../../files/infrastructure/persistence/document/mappers/file.mapper';
+
 import { Role } from '../../../../../roles/domain/role';
 import { Status } from '../../../../../statuses/domain/status';
 import { RoleSchema } from '../../../../../roles/infrastructure/persistence/document/entities/role.schema';
 import { StatusSchema } from '../../../../../statuses/infrastructure/persistence/document/entities/status.schema';
+import { FileMapper } from 'src/files/infrastructure/persistence/relational/mappers/file.mapper';
+import { FileSchemaClass } from 'src/files-old/infrastructure/persistence/document/entities/file.schema';
 
 export class UserMapper {
   static toDomain(raw: UserSchemaClass): User {
@@ -15,8 +16,8 @@ export class UserMapper {
     domainEntity.password = raw.password;
     domainEntity.provider = raw.provider;
     domainEntity.socialId = raw.socialId;
-    if (raw.photo) {
-      domainEntity.photo = FileMapper.toDomain(raw.photo);
+    if (raw.photo && typeof raw.photo === 'object' && 'id' in raw.photo) {
+      domainEntity.photo = FileMapper.toDomain(raw.photo as any);
     } else if (raw.photo === null) {
       domainEntity.photo = null;
     }

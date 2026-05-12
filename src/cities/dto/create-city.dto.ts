@@ -7,6 +7,7 @@ import {
   IsOptional,
   ValidateNested,
   IsNotEmptyObject,
+  IsNumber,
 } from 'class-validator';
 
 import {
@@ -63,6 +64,22 @@ export class CreateCityDto {
   @IsOptional()
   @IsString()
   nameFr?: string | null;
+
+  @ApiProperty({
+    required: false,
+    type: () => Number,
+  })
+  @IsOptional()
+  @IsNumber()
+  lat?: number | null;
+
+  @ApiProperty({
+    required: false,
+    type: () => Number,
+  })
+  @IsOptional()
+  @IsNumber()
+  lng?: number | null;
 
   // Don't forget to use the class-validator decorators in the DTO properties.
 }

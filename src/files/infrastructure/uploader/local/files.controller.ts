@@ -1,4 +1,5 @@
 import {
+  Body, // ← ADD
   Controller,
   Get,
   Param,
@@ -29,9 +30,7 @@ import { FileResponseDto } from './dto/file-response.dto';
 export class FilesLocalController {
   constructor(private readonly filesService: FilesLocalService) {}
 
-  @ApiCreatedResponse({
-    type: FileResponseDto,
-  })
+  @ApiCreatedResponse({ type: FileResponseDto })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Post('upload')
@@ -44,14 +43,22 @@ export class FilesLocalController {
           type: 'string',
           format: 'binary',
         },
+        fileDescription: {
+          // ← ADD
+          type: 'string',
+          nullable: true,
+          description: 'Optional file description',
+        },
       },
+      required: ['file'],
     },
   })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
+    @Body('fileDescription') fileDescription?: string, // ← ADD
   ): Promise<FileResponseDto> {
-    return this.filesService.create(file);
+    return this.filesService.create(file, fileDescription ?? null); // ← ADD arg
   }
 
   @Get(':path')

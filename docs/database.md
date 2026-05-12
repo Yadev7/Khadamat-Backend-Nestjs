@@ -303,9 +303,9 @@ If you've made it this far, it only requires a few changes to switch from `Postg
 
 ```env
 DATABASE_TYPE=mysql
-# set "localhost" if you are running app on local machine
+# set "127.0.0.1" if you are running app on local machine
 # set "mysql" if you are running app on docker
-DATABASE_HOST=localhost
+DATABASE_HOST=127.0.0.1
 DATABASE_PORT=3306
 DATABASE_USERNAME=root
 DATABASE_PASSWORD=secret
@@ -377,12 +377,12 @@ Run the app in dev mode:
 npm run start:dev
 ```
 
-Open <http://localhost:3000>
+Open <http://127.0.0.1:3000>
 
 To set up Adminer:
 
 Open the running port in your browser.
-Open <http://localhost:8080>
+Open <http://127.0.0.1:8080>
 
 ![image](https://github.com/user-attachments/assets/f4b86daa-d93f-4ae9-a9e3-3c29bb3bba9d)
 

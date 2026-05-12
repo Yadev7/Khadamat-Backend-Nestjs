@@ -27,6 +27,7 @@ import {
 } from '../utils/dto/infinity-pagination-response.dto';
 import { infinityPagination } from '../utils/infinity-pagination';
 import { FindAllCityAreasDto } from './dto/find-all-city-areas.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Cityareas')
 @ApiBearerAuth()
@@ -47,6 +48,7 @@ export class CityAreasController {
   }
 
   @Get()
+  @Public()
   @ApiOkResponse({
     type: InfinityPaginationResponse(CityArea),
   })

@@ -32,9 +32,9 @@ Switching between TypeORM and Mongoose is implemented based on the [Hexagonal Ar
    cp env-example-relational .env
    ```
 
-1. Change `DATABASE_HOST=postgres` to `DATABASE_HOST=localhost`
+1. Change `DATABASE_HOST=postgres` to `DATABASE_HOST=127.0.0.1`
 
-   Change `MAIL_HOST=maildev` to `MAIL_HOST=localhost`
+   Change `MAIL_HOST=maildev` to `MAIL_HOST=127.0.0.1`
 
 1. Run additional container:
 
@@ -76,7 +76,7 @@ Switching between TypeORM and Mongoose is implemented based on the [Hexagonal Ar
    npm run start:dev
    ```
 
-1. Open <http://localhost:3001>
+1. Open <http://127.0.0.1:3001>
 
 ### Video guideline (PostgreSQL + TypeORM)
 
@@ -99,7 +99,7 @@ Switching between TypeORM and Mongoose is implemented based on the [Hexagonal Ar
    cp env-example-document .env
    ```
 
-1. Change `DATABASE_URL=mongodb://mongo:27017` to `DATABASE_URL=mongodb://localhost:27017`
+1. Change `DATABASE_URL=mongodb://mongo:27017` to `DATABASE_URL=mongodb://127.0.0.1:27017`
 
 1. Run additional container:
 
@@ -135,7 +135,7 @@ Switching between TypeORM and Mongoose is implemented based on the [Hexagonal Ar
    npm run start:dev
    ```
 
-1. Open <http://localhost:3001>
+1. Open <http://127.0.0.1:3001>
 
 ---
 
@@ -168,7 +168,7 @@ If you want quick run your app, you can use following commands:
    docker compose logs
    ```
 
-1. Open <http://localhost:3001>
+1. Open <http://127.0.0.1:3001>
 
 ---
 
@@ -201,16 +201,16 @@ If you want quick run your app, you can use following commands:
    docker compose -f docker-compose.document.yaml logs
    ```
 
-1. Open <http://localhost:3001>
+1. Open <http://127.0.0.1:3001>
 
 ---
 
 ## Links
 
-- Swagger (API docs): <http://localhost:3001/docs>
-- Adminer (client for DB): <http://localhost:8080>
-- MongoDB Express (client for DB): <http://localhost:8081/>
-- Maildev: <http://localhost:1080>
+- Swagger (API docs): <http://127.0.0.1:3001/docs>
+- Adminer (client for DB): <http://127.0.0.1:8080>
+- MongoDB Express (client for DB): <http://127.0.0.1:8081/>
+- Maildev: <http://127.0.0.1:1080>
 
 ---
 

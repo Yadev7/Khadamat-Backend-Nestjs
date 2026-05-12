@@ -27,6 +27,7 @@ import {
 } from '../utils/dto/infinity-pagination-response.dto';
 import { infinityPagination } from '../utils/infinity-pagination';
 import { FindAllServicesDto } from './dto/find-all-services.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Services')
 @ApiBearerAuth()
@@ -38,15 +39,23 @@ import { FindAllServicesDto } from './dto/find-all-services.dto';
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
+  // @Post()
+  // @ApiCreatedResponse({
+  //   type: Service,
+  // })
+  // create(@Body() createServiceDto: CreateServiceDto) {
+  //   return this.servicesService.create(createServiceDto);
+  // }
+
   @Post()
-  @ApiCreatedResponse({
-    type: Service,
-  })
   create(@Body() createServiceDto: CreateServiceDto) {
+    console.log('--- DATA RECEIVED BY CONTROLLER ---');
+    console.log(createServiceDto); // If 'image' is null here, the issue is the DTO/ValidationPipe
     return this.servicesService.create(createServiceDto);
   }
 
   @Get()
+  @Public()
   @ApiOkResponse({
     type: InfinityPaginationResponse(Service),
   })
@@ -96,13 +105,18 @@ export class ServicesController {
     return this.servicesService.update(id, updateServiceDto);
   }
 
+  // @Delete(':id')
+  // @ApiParam({
+  //   name: 'id',
+  //   type: String,
+  //   required: true,
+  // })
+  // remove(@Param('id') id: string) {
+  //   return this.servicesService.remove(id);
+  // }
+
   @Delete(':id')
-  @ApiParam({
-    name: 'id',
-    type: String,
-    required: true,
-  })
-  remove(@Param('id') id: string) {
-    return this.servicesService.remove(id);
-  }
+async remove(@Param('id') id: string) {
+  return await this.servicesService.remove(id);
+}
 }
