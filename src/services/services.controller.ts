@@ -14,7 +14,6 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import {
   ApiBearerAuth,
-  ApiCreatedResponse,
   ApiOkResponse,
   ApiParam,
   ApiTags,
@@ -116,7 +115,7 @@ export class ServicesController {
   // }
 
   @Delete(':id')
-async remove(@Param('id') id: string) {
-  return await this.servicesService.remove(id);
-}
+  async remove(@Param('id') id: string) {
+    return await this.servicesService.remove(id);
+  }
 }

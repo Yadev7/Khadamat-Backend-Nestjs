@@ -6,28 +6,28 @@ import * as citiesData from './ma.json';
 
 @Injectable()
 export class CitySeedService {
-    constructor(
-        @InjectRepository(CityEntity)
-        private repository: Repository<CityEntity>,
-    ) { }
+  constructor(
+    @InjectRepository(CityEntity)
+    private repository: Repository<CityEntity>,
+  ) {}
 
-    async run() {
-        for (const data of citiesData) {
-            // التحقق مما إذا كانت المدينة موجودة مسبقاً لتجنب التكرار
-            const count = await this.repository.count({
-                where: { nameEn: data.city },
-            });
+  async run() {
+    for (const data of citiesData) {
+      // التحقق مما إذا كانت المدينة موجودة مسبقاً لتجنب التكرار
+      const count = await this.repository.count({
+        where: { nameEn: data.city },
+      });
 
-            if (count === 0) {
-                await this.repository.save(
-                    this.repository.create({
-                        nameEn: data.city,
-                        lat: parseFloat(data.lat),
-                        lng: parseFloat(data.lng),
-                        // يمكنك ربط الدولة هنا إذا كان لديك ID الدولة المغربية
-                    }),
-                );
-            }
-        }
+      if (count === 0) {
+        await this.repository.save(
+          this.repository.create({
+            nameEn: data.city,
+            lat: parseFloat(data.lat),
+            lng: parseFloat(data.lng),
+            // يمكنك ربط الدولة هنا إذا كان لديك ID الدولة المغربية
+          }),
+        );
+      }
     }
+  }
 }

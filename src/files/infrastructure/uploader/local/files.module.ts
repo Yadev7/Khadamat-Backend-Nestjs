@@ -21,6 +21,7 @@ const infrastructurePersistenceModule = RelationalFilePersistenceModule;
     MulterModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       useFactory: (configService: ConfigService<AllConfigType>) => {
         return {
           fileFilter: (request, file, callback) => {
@@ -66,4 +67,4 @@ const infrastructurePersistenceModule = RelationalFilePersistenceModule;
   providers: [ConfigModule, ConfigService, FilesLocalService],
   exports: [FilesLocalService],
 })
-export class FilesLocalModule { }
+export class FilesLocalModule {}

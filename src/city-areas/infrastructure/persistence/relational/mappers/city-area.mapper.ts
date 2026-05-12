@@ -64,7 +64,6 @@ export class CityAreaMapper {
     persistenceEntity.nameAr = domainEntity.nameAr;
 
     persistenceEntity.nameFr = domainEntity.nameFr;
-    
 
     if (domainEntity.id) {
       persistenceEntity.id = domainEntity.id;

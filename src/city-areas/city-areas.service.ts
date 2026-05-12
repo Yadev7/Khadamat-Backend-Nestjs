@@ -13,7 +13,6 @@ import { IPaginationOptions } from '../utils/types/pagination-options';
 import { CityArea } from './domain/city-area';
 import { City } from '../cities/domain/city'; // Make sure to import the City domain
 
-
 @Injectable()
 export class CityAreasService {
   constructor(
@@ -85,7 +84,6 @@ export class CityAreasService {
   //     },
   //   });
   // }
-
 
   // src/city-areas/infrastructure/persistence/relational/repositories/city-area.repository.ts
 

@@ -13,7 +13,7 @@ export class BusinessRelationalRepository implements BusinessRepository {
   constructor(
     @InjectRepository(BusinessEntity)
     private readonly businessRepository: Repository<BusinessEntity>,
-  ) { }
+  ) {}
 
   private readonly relations = [
     'contact',
@@ -25,7 +25,6 @@ export class BusinessRelationalRepository implements BusinessRepository {
     'manager',
     'flyer',
   ];
-
 
   async create(data: Business): Promise<Business> {
     const persistenceModel = BusinessMapper.toPersistence(data);
@@ -51,7 +50,6 @@ export class BusinessRelationalRepository implements BusinessRepository {
 
   //   return entities.map((entity) => BusinessMapper.toDomain(entity));
   // }
-
 
   // business.repository.ts (النسخة العلائقية / Relational)
 
@@ -99,7 +97,6 @@ export class BusinessRelationalRepository implements BusinessRepository {
   //   return entities.map((entity) => BusinessMapper.toDomain(entity));
   // }
 
-
   // businesses/infrastructure/persistence/relational/repositories/business.repository.ts
 
   async findAllWithPagination({
@@ -109,7 +106,8 @@ export class BusinessRelationalRepository implements BusinessRepository {
     paginationOptions: IPaginationOptions;
     filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
   }): Promise<Business[]> {
-    const query = this.businessRepository.createQueryBuilder('business')
+    const query = this.businessRepository
+      .createQueryBuilder('business')
       .leftJoinAndSelect('business.service', 'service')
       .leftJoinAndSelect('business.flyer', 'flyer')
       .leftJoinAndSelect('business.contact', 'contact')
@@ -117,17 +115,23 @@ export class BusinessRelationalRepository implements BusinessRepository {
       .leftJoinAndSelect('address.localisation', 'localisation');
 
     if (filterOptions?.serviceId) {
-      query.andWhere('service.id = :serviceId', { serviceId: filterOptions.serviceId });
+      query.andWhere('service.id = :serviceId', {
+        serviceId: filterOptions.serviceId,
+      });
     }
 
     if (filterOptions?.cityId) {
       // Assuming your Address entity has a city relationship
-      query.andWhere('address.cityId = :cityId', { cityId: filterOptions.cityId });
+      query.andWhere('address.cityId = :cityId', {
+        cityId: filterOptions.cityId,
+      });
     }
 
     if (filterOptions?.zoneId) {
       // Assuming your Address entity has a zone/area relationship
-      query.andWhere('address.zoneId = :zoneId', { zoneId: filterOptions.zoneId });
+      query.andWhere('address.zoneId = :zoneId', {
+        zoneId: filterOptions.zoneId,
+      });
     }
 
     query

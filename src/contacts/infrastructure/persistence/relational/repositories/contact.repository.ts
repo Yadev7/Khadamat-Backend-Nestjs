@@ -13,9 +13,10 @@ export class ContactRelationalRepository implements ContactRepository {
   constructor(
     @InjectRepository(ContactEntity)
     private readonly contactRepository: Repository<ContactEntity>,
-  ) { }
+  ) {}
   contactEntityRepository: any;
-  find(arg0: { skip: number; take: number; relations: string[]; }): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  find(arg0: { skip: number; take: number; relations: string[] }): void {
     throw new Error('Method not implemented.');
   }
 

@@ -6,7 +6,8 @@ import { ContactMapper } from './relational/mappers/contact.mapper';
 
 export abstract class ContactRepository {
   contactEntityRepository: any;
-  find(arg0: { skip: number; take: number; relations: string[]; }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  find(arg0: { skip: number; take: number; relations: string[] }) {
     throw new Error('Method not implemented.');
   }
   abstract create(
@@ -20,19 +21,19 @@ export abstract class ContactRepository {
   // }): Promise<Contact[]>;
 
   // Example fix in contact.repository.ts
-async findAllWithPagination({
-  paginationOptions,
-}: {
-  paginationOptions: IPaginationOptions;
-}): Promise<Contact[]> {
-  const entities = await this.contactEntityRepository.find({
-    skip: (paginationOptions.page - 1) * paginationOptions.limit,
-    take: paginationOptions.limit,
-    relations: ['address'], // <--- THIS LINE IS THE KEY
-  });
+  async findAllWithPagination({
+    paginationOptions,
+  }: {
+    paginationOptions: IPaginationOptions;
+  }): Promise<Contact[]> {
+    const entities = await this.contactEntityRepository.find({
+      skip: (paginationOptions.page - 1) * paginationOptions.limit,
+      take: paginationOptions.limit,
+      relations: ['address'], // <--- THIS LINE IS THE KEY
+    });
 
-  return entities.map((entity) => ContactMapper.toDomain(entity));
-}
+    return entities.map((entity) => ContactMapper.toDomain(entity));
+  }
 
   abstract findById(id: Contact['id']): Promise<NullableType<Contact>>;
 

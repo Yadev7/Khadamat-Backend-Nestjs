@@ -22,11 +22,14 @@ import { UsersModule } from '../users/users.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         // إضافة 'as string' أو علامة التعجب للتأكيد
-        secret: configService.get<string>('AUTH_JWT_SECRET'),
+        secret: configService.get<string>('AUTH_JWT_SECRET', { infer: true }),
         signOptions: {
-          // الحل هنا: نستخدم Type Casting لـ 'any' أو 'StringValue' 
+          // الحل هنا: نستخدم Type Casting لـ 'any' أو 'StringValue'
           // ليتوافق مع توقعات مكتبة JWT
-          expiresIn: configService.get<string>('AUTH_JWT_TOKEN_EXPIRES_IN') as any || '1d',
+          expiresIn:
+            (configService.get<string>('AUTH_JWT_TOKEN_EXPIRES_IN', {
+              infer: true,
+            }) as any) || '1d',
         },
       }),
     }),

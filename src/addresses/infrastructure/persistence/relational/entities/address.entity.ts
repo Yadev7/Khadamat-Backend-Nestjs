@@ -23,21 +23,29 @@ export class AddressEntity extends EntityRelationalHelper {
   @JoinColumn()
   localisation?: LocalisationEntity | null;
 
-  @ManyToOne(() => CityEntity, { eager: false, nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => CityEntity, {
+    eager: false,
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   city?: CityEntity | null;
 
-  @ManyToOne(() => CityAreaEntity, { eager: false, nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => CityAreaEntity, {
+    eager: false,
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   zone?: CityAreaEntity | null;
 
   // @ManyToOne(() => CountryEntity, { eager: false, nullable: true })
   // country?: CountryEntity | null;
 
-  @ManyToOne(() => CountryEntity, { 
-  eager: false, 
-  nullable: true, 
-  onDelete: 'SET NULL' // Add this line
-})
-country?: CountryEntity | null;
+  @ManyToOne(() => CountryEntity, {
+    eager: false,
+    nullable: true,
+    onDelete: 'SET NULL', // Add this line
+  })
+  country?: CountryEntity | null;
 
   @Column({
     nullable: true,

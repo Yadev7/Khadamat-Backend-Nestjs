@@ -18,13 +18,15 @@ export class ServicesService {
   constructor(
     private readonly fileService: FilesService,
     private readonly serviceRepository: ServiceRepository,
-  ) { }
+  ) {}
 
   async create(createServiceDto: CreateServiceDto) {
     // معالجة الفيديو عند الإنشاء
     let video: FileType | null | undefined = undefined;
     if (createServiceDto.video) {
-      const videoObject = await this.fileService.findById(createServiceDto.video.id);
+      const videoObject = await this.fileService.findById(
+        createServiceDto.video.id,
+      );
       if (!videoObject) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -39,7 +41,9 @@ export class ServicesService {
     // معالجة الصورة عند الإنشاء
     let image: FileType | null | undefined = undefined;
     if (createServiceDto.image) {
-      const imageObject = await this.fileService.findById(createServiceDto.image.id);
+      const imageObject = await this.fileService.findById(
+        createServiceDto.image.id,
+      );
       if (!imageObject) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -88,7 +92,9 @@ export class ServicesService {
     // 1. معالجة الفيديو (التحقق من وجوده في جدول الملفات)
     let video: FileType | null | undefined = undefined;
     if (updateServiceDto.video) {
-      const videoObject = await this.fileService.findById(updateServiceDto.video.id);
+      const videoObject = await this.fileService.findById(
+        updateServiceDto.video.id,
+      );
       if (!videoObject) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -103,7 +109,9 @@ export class ServicesService {
     // 2. معالجة الصورة (إصلاح الخطأ السابق: الآن المتغير معرف)
     let image: FileType | null | undefined = undefined;
     if (updateServiceDto.image) {
-      const imageObject = await this.fileService.findById(updateServiceDto.image.id);
+      const imageObject = await this.fileService.findById(
+        updateServiceDto.image.id,
+      );
       if (!imageObject) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -138,9 +146,10 @@ export class ServicesService {
       return { status: 'deleted', id };
     } catch (error) {
       // إذا كان الخطأ متعلق بقيود قاعدة البيانات (Foreign Key)
-      if (error.code === '23503') { // كود الخطأ لـ PostgreSQL مثلاً
+      if (error.code === '23503') {
+        // كود الخطأ لـ PostgreSQL مثلاً
         throw new InternalServerErrorException(
-          'Cannot delete service: It is referenced by other records (e.g. bookings).'
+          'Cannot delete service: It is referenced by other records (e.g. bookings).',
         );
       }
       throw error;

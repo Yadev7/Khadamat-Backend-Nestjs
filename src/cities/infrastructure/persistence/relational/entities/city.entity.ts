@@ -16,7 +16,11 @@ export class CityEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => CountryEntity, { eager: false, nullable: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => CountryEntity, {
+    eager: false,
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   country?: CountryEntity | null;
 
   @Column({ nullable: true, type: String })

@@ -179,6 +179,7 @@ export class BusinessesService {
     const videoEn = await this.mapFile(createBusinessDto.videoEn);
 
     // 4. استخراج *كل* الحقول المتعارضة من الـ DTO لضمان عدم تمريرها للـ Repository كـ DTO
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const {
       owner: _o,
       contact: _c,
@@ -193,6 +194,7 @@ export class BusinessesService {
       manager: _m,
       ...restOfDto
     } = createBusinessDto;
+    /* eslint-enable @typescript-eslint/no-unused-vars */
 
     // 5. الإرسال النهائي
     return this.businessRepository.create({
@@ -293,6 +295,7 @@ export class BusinessesService {
     }
 
     // Extract all potentially conflicting fields from DTO
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const {
       owner: _o,
       contact: _c,
@@ -307,6 +310,7 @@ export class BusinessesService {
       manager: _m,
       ...restOfDto
     } = updateBusinessDto;
+    /* eslint-enable @typescript-eslint/no-unused-vars */
 
     return this.businessRepository.update(id, {
       ...restOfDto,
@@ -338,17 +342,17 @@ export class BusinessesService {
   // }
 
   async findAllWithPagination({
-  paginationOptions,
-  filterOptions, // Add this
-}: {
-  paginationOptions: IPaginationOptions;
-  filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-}) {
-  return this.businessRepository.findAllWithPagination({
     paginationOptions,
-    filterOptions, // Ensure your Repository uses QueryBuilder to join address and localisation
-  });
-}
+    filterOptions, // Add this
+  }: {
+    paginationOptions: IPaginationOptions;
+    filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
+  }) {
+    return this.businessRepository.findAllWithPagination({
+      paginationOptions,
+      filterOptions, // Ensure your Repository uses QueryBuilder to join address and localisation
+    });
+  }
 
   async findById(id: Business['id']): Promise<Business | null> {
     return this.businessRepository.findById(id);

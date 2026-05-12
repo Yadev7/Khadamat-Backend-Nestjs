@@ -9,4 +9,4 @@ import { CityEntity } from 'src/cities/infrastructure/persistence/relational/ent
   providers: [CitySeedService],
   exports: [CitySeedService],
 })
-export class CitySeedModule { }
+export class CitySeedModule {}
