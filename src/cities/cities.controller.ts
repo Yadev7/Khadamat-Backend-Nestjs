@@ -20,7 +20,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { City } from './domain/city';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   InfinityPaginationResponse,
   InfinityPaginationResponseDto,
@@ -31,7 +31,7 @@ import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Cities')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard)
 @Controller({
   path: 'cities',
   version: '1',

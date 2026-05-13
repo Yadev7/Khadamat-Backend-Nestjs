@@ -19,7 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Service } from './domain/service';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   InfinityPaginationResponse,
   InfinityPaginationResponseDto,
@@ -30,7 +30,7 @@ import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Services')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard)
 @Controller({
   path: 'services',
   version: '1',
@@ -38,18 +38,10 @@ import { Public } from '../auth/decorators/public.decorator';
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
-  // @Post()
-  // @ApiCreatedResponse({
-  //   type: Service,
-  // })
-  // create(@Body() createServiceDto: CreateServiceDto) {
-  //   return this.servicesService.create(createServiceDto);
-  // }
-
   @Post()
   create(@Body() createServiceDto: CreateServiceDto) {
     console.log('--- DATA RECEIVED BY CONTROLLER ---');
-    console.log(createServiceDto); // If 'image' is null here, the issue is the DTO/ValidationPipe
+    console.log(createServiceDto);
     return this.servicesService.create(createServiceDto);
   }
 
@@ -103,16 +95,6 @@ export class ServicesController {
   update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
     return this.servicesService.update(id, updateServiceDto);
   }
-
-  // @Delete(':id')
-  // @ApiParam({
-  //   name: 'id',
-  //   type: String,
-  //   required: true,
-  // })
-  // remove(@Param('id') id: string) {
-  //   return this.servicesService.remove(id);
-  // }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
