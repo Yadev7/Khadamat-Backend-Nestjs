@@ -7,16 +7,26 @@ import { City } from '../../../../domain/city';
 import { CityRepository } from '../../city.repository';
 import { CityMapper } from '../mappers/city.mapper';
 import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
+import { LocalisationEntity } from '../../../../../localisations/infrastructure/persistence/relational/entities/localisation.entity';
+
 @Injectable()
 export class CityRelationalRepository implements CityRepository {
   constructor(
     @InjectRepository(CityEntity)
     private readonly cityRepository: Repository<CityEntity>,
-  ) {}
+  ) { }
+  // async create(data: City): Promise<City> {
+  //   const persistenceModel = CityMapper.toPersistence(data);
+  //   const newEntity = await this.cityRepository.save(
+  //     this.cityRepository.create(persistenceModel),
+  //   );
+  //   return CityMapper.toDomain(newEntity);
+  // }
+
   async create(data: City): Promise<City> {
     const persistenceModel = CityMapper.toPersistence(data);
     const newEntity = await this.cityRepository.save(
-      this.cityRepository.create(persistenceModel),
+      this.cityRepository.create(persistenceModel), // 👈 هنا المشكلة الكامنة!
     );
     return CityMapper.toDomain(newEntity);
   }
@@ -51,22 +61,36 @@ export class CityRelationalRepository implements CityRepository {
   }
 
   async update(id: City['id'], payload: Partial<City>): Promise<City> {
+    // 1. جلب الـ Entity الحالية شاملة العلاقات من قاعدة البيانات
     const entity = await this.cityRepository.findOne({
       where: { id },
+      relations: ['localisation', 'country'], // تأكيد جلب العلاقات لمنع تجاوزها بـ null
     });
 
     if (!entity) {
       throw new Error('Record not found');
     }
 
-    const updatedEntity = await this.cityRepository.save(
-      this.cityRepository.create(
-        CityMapper.toPersistence({
-          ...CityMapper.toDomain(entity),
-          ...payload,
-        }),
-      ),
-    );
+    // 2. تحويل الـ Payload القادم من السيرفيس إلى شكل Persistence Entity
+    // ندمج أولاً على مستوى الدومين للتأكد من سلامة منطق البزنس
+    const mergedDomain = {
+      ...CityMapper.toDomain(entity),
+      ...payload,
+    };
+    const persistenceModel = CityMapper.toPersistence(mergedDomain);
+
+    // 3. دمج التغييرات الجديدة مباشرة فوق كائن الـ Entity المُجلب لتحديثه بذكاء
+    Object.assign(entity, persistenceModel);
+
+    // إذا تم إرسال كائن موقع محدث، ندمجه مع كائن الموقع التابع للـ Entity الأصلية
+    if (persistenceModel.localisation) {
+      entity.localisation = Object.assign(entity.localisation || new LocalisationEntity(), persistenceModel.localisation);
+    } else if (persistenceModel.localisation === null) {
+      entity.localisation = null;
+    }
+
+    // 4. الحفظ النهائي، سيتولى TypeORM تحديث جدول city وجدول localisation بالتتابع الذكي
+    const updatedEntity = await this.cityRepository.save(entity);
 
     return CityMapper.toDomain(updatedEntity);
   }

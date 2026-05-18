@@ -7,30 +7,49 @@ import { UpdateCountryDto } from './dto/update-country.dto';
 import { CountryRepository } from './infrastructure/persistence/country.repository';
 import { IPaginationOptions } from '../utils/types/pagination-options';
 import { Country } from './domain/country';
+import { LocalisationsService } from '../localisations/localisations.service';
+import { Localisation } from '../localisations/domain/localisation';
+import { HttpStatus, UnprocessableEntityException } from '@nestjs/common';
 
 @Injectable()
 export class CountriesService {
   constructor(
-    // Dependencies here
     private readonly countryRepository: CountryRepository,
+    private readonly localisationService: LocalisationsService,
   ) {}
 
   async create(createCountryDto: CreateCountryDto) {
-    // Do not remove comment below.
-    // <creating-property />
+    let localisation: Localisation | null | undefined = undefined;
+
+    if (createCountryDto.latitude !== undefined && createCountryDto.longitude !== undefined) {
+      localisation = {
+        latitude: Number(createCountryDto.latitude),
+        longitude: Number(createCountryDto.longitude),
+      } as Localisation;
+    } else if (createCountryDto.localisation) {
+      const localisationObject = await this.localisationService.findById(
+        createCountryDto.localisation.id,
+      );
+      if (!localisationObject) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            localisation: 'notExists',
+          },
+        });
+      }
+      localisation = localisationObject;
+    } else if (createCountryDto.localisation === null) {
+      localisation = null;
+    }
 
     return this.countryRepository.create({
-      // Do not remove comment below.
-      // <creating-property-payload />
       flagImg: createCountryDto.flagImg,
-
       nameEn: createCountryDto.nameEn,
-
       nameAr: createCountryDto.nameAr,
-
       nameFr: createCountryDto.nameFr,
-
       countryCode: createCountryDto.countryCode,
+      localisation,
     });
   }
 
@@ -57,28 +76,49 @@ export class CountriesService {
 
   async update(
     id: Country['id'],
-
     updateCountryDto: UpdateCountryDto,
   ) {
-    // Do not remove comment below.
-    // <updating-property />
+    const currentCountry = await this.countryRepository.findById(id);
+    if (!currentCountry) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: { country: 'notExists' },
+      });
+    }
+
+    let localisation: any = undefined;
+    if (updateCountryDto.latitude !== undefined && updateCountryDto.longitude !== undefined) {
+      localisation = {
+        id: currentCountry.localisation?.id || undefined,
+        latitude: Number(updateCountryDto.latitude),
+        longitude: Number(updateCountryDto.longitude),
+      };
+    } else if (updateCountryDto.latitude === null || updateCountryDto.longitude === null) {
+      localisation = null;
+    } else {
+      localisation = currentCountry.localisation;
+    }
 
     return this.countryRepository.update(id, {
-      // Do not remove comment below.
-      // <updating-property-payload />
+      ...currentCountry,
       flagImg: updateCountryDto.flagImg,
-
       nameEn: updateCountryDto.nameEn,
-
       nameAr: updateCountryDto.nameAr,
-
       nameFr: updateCountryDto.nameFr,
-
       countryCode: updateCountryDto.countryCode,
+      localisation,
     });
   }
 
-  remove(id: Country['id']) {
-    return this.countryRepository.remove(id);
+  async remove(id: Country['id']) {
+    // Load the country first so we can grab the orphaned localisationId
+    const country = await this.countryRepository.findById(id);
+
+    await this.countryRepository.remove(id);
+
+    // After the country row is gone, delete its orphaned localisation
+    if (country?.localisation?.id) {
+      await this.localisationService.remove(country.localisation.id);
+    }
   }
 }

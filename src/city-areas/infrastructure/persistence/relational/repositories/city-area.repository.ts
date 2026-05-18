@@ -7,6 +7,7 @@ import { CityArea } from '../../../../domain/city-area';
 import { CityAreaRepository } from '../../city-area.repository';
 import { CityAreaMapper } from '../mappers/city-area.mapper';
 import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
+import { LocalisationEntity } from '../../../../../localisations/infrastructure/persistence/relational/entities/localisation.entity';
 
 @Injectable()
 export class CityAreaRelationalRepository implements CityAreaRepository {
@@ -48,7 +49,7 @@ export class CityAreaRelationalRepository implements CityAreaRepository {
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
       // --- هذا هو السطر المطلوب لحل مشكلة المناطق الفارغة ---
-      relations: ['city'],
+      relations: ['city', 'localisation'],
     });
 
     // الماپر يحول الكائنات من شكل قاعدة البيانات إلى شكل التطبيق
@@ -58,6 +59,7 @@ export class CityAreaRelationalRepository implements CityAreaRepository {
   async findById(id: CityArea['id']): Promise<NullableType<CityArea>> {
     const entity = await this.cityAreaRepository.findOne({
       where: { id },
+      relations: ['city', 'localisation'],
     });
 
     return entity ? CityAreaMapper.toDomain(entity) : null;
@@ -66,6 +68,7 @@ export class CityAreaRelationalRepository implements CityAreaRepository {
   async findByIds(ids: CityArea['id'][]): Promise<CityArea[]> {
     const entities = await this.cityAreaRepository.find({
       where: { id: In(ids) },
+      relations: ['city', 'localisation'],
     });
 
     return entities.map((entity) => CityAreaMapper.toDomain(entity));
@@ -77,20 +80,28 @@ export class CityAreaRelationalRepository implements CityAreaRepository {
   ): Promise<CityArea> {
     const entity = await this.cityAreaRepository.findOne({
       where: { id },
+      relations: ['localisation', 'city'], // Load relations to merge correctly
     });
 
     if (!entity) {
       throw new Error('Record not found');
     }
 
-    const updatedEntity = await this.cityAreaRepository.save(
-      this.cityAreaRepository.create(
-        CityAreaMapper.toPersistence({
-          ...CityAreaMapper.toDomain(entity),
-          ...payload,
-        }),
-      ),
-    );
+    const mergedDomain = {
+      ...CityAreaMapper.toDomain(entity),
+      ...payload,
+    };
+    const persistenceModel = CityAreaMapper.toPersistence(mergedDomain);
+
+    Object.assign(entity, persistenceModel);
+
+    if (persistenceModel.localisation) {
+      entity.localisation = Object.assign(entity.localisation || new LocalisationEntity(), persistenceModel.localisation);
+    } else if (persistenceModel.localisation === null) {
+      entity.localisation = null;
+    }
+
+    const updatedEntity = await this.cityAreaRepository.save(entity);
 
     return CityAreaMapper.toDomain(updatedEntity);
   }

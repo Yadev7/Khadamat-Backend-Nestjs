@@ -68,5 +68,19 @@ export class CreateCityAreaDto {
   @IsString()
   nameFr?: string | null;
 
+  @ApiProperty({
+    required: false,
+    type: () => Number,
+  })
+  @IsOptional()
+  latitude?: number | null;
+
+  @ApiProperty({
+    required: false,
+    type: () => Number,
+  })
+  @IsOptional()
+  longitude?: number | null;
+
   // Don't forget to use the class-validator decorators in the DTO properties.
 }

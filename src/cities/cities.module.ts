@@ -1,4 +1,5 @@
 import { CountriesModule } from '../countries/countries.module';
+import { LocalisationsModule } from '../localisations/localisations.module';
 
 import {
   // do not remove this comment
@@ -11,6 +12,7 @@ import { RelationalCityPersistenceModule } from './infrastructure/persistence/re
 @Module({
   imports: [
     CountriesModule,
+    LocalisationsModule,
 
     // do not remove this comment
     RelationalCityPersistenceModule,

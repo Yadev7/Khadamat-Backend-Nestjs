@@ -2,10 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class Country {
   @ApiProperty({
-    type: () => String,
     nullable: true,
   })
-  flagImg?: string | null;
+  flagImg?: any | null;
 
   @ApiProperty({
     type: () => String,
@@ -35,6 +34,9 @@ export class Country {
     type: String,
   })
   id?: string;
+
+  @ApiProperty({ required: false })
+  localisation?: any | null;
 
   @ApiProperty()
   createdAt?: Date;

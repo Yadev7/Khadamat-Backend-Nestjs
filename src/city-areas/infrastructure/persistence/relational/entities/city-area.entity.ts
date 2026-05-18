@@ -10,6 +10,7 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { EntityRelationalHelper } from '../../../../../utils/relational-entity-helper';
 
@@ -17,7 +18,16 @@ import { EntityRelationalHelper } from '../../../../../utils/relational-entity-h
   name: 'city_area',
 })
 export class CityAreaEntity extends EntityRelationalHelper {
-  @ManyToOne(() => LocalisationEntity, { eager: false, nullable: true })
+  @Column({ name: 'localisationId', nullable: true, type: 'uuid' })
+  localisationId?: string | null;
+
+  @OneToOne(() => LocalisationEntity, {
+    eager: true,
+    cascade: true,
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'localisationId' })
   localisation?: LocalisationEntity | null;
 
   // @ManyToOne(() => CityEntity, { eager: false, nullable: true, onDelete: 'CASCADE' })

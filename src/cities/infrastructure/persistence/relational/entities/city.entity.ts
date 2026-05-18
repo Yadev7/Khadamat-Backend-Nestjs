@@ -1,3 +1,5 @@
+// src/cities/infrastructure/persistence/relational/entities/city.entity.ts
+
 import { CountryEntity } from '../../../../../countries/infrastructure/persistence/relational/entities/country.entity';
 import {
   CreateDateColumn,
@@ -6,8 +8,11 @@ import {
   UpdateDateColumn,
   Column,
   ManyToOne,
+  JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { EntityRelationalHelper } from '../../../../../utils/relational-entity-helper';
+import { LocalisationEntity } from 'src/localisations/infrastructure/persistence/relational/entities/localisation.entity';
 
 @Entity({
   name: 'city',
@@ -23,6 +28,20 @@ export class CityEntity extends EntityRelationalHelper {
   })
   country?: CountryEntity | null;
 
+  // 1. تعريف العمود الصريح في جدول المدينة لتخزين الـ UUID الخاص بالموقع
+  @Column({ name: 'localisationId', nullable: true, type: 'uuid' })
+  localisationId?: string | null;
+
+  // 2. إعداد العلاقة مع الإشارة إلى العمود أعلاه كمفتاح خارجي (Foreign Key)
+  @OneToOne(() => LocalisationEntity, {
+    eager: true,
+    cascade: true, // يسمح بحفظ السطر في جدول localisation تلقائياً عند حفظ المدينة
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'localisationId' }) // يربط العلاقة بالعمود localisationId في جدول city
+  localisation?: LocalisationEntity | null;
+
   @Column({ nullable: true, type: String })
   nameEn?: string | null;
 
@@ -31,31 +50,6 @@ export class CityEntity extends EntityRelationalHelper {
 
   @Column({ nullable: true, type: String })
   nameFr?: string | null;
-
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 8,
-    nullable: true,
-    // يضمن الـ transformer تحويل السلسلة النصية القادمة من DB إلى رقم تلقائياً
-    transformer: {
-      to: (value: number) => value,
-      from: (value: string) => (value ? parseFloat(value) : null),
-    },
-  })
-  lat?: number | null;
-
-  @Column({
-    type: 'decimal',
-    precision: 11,
-    scale: 8,
-    nullable: true,
-    transformer: {
-      to: (value: number) => value,
-      from: (value: string) => (value ? parseFloat(value) : null),
-    },
-  })
-  lng?: number | null;
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -11,11 +11,9 @@ import {
 export class CreateCountryDto {
   @ApiProperty({
     required: false,
-    type: () => String,
   })
   @IsOptional()
-  @IsString()
-  flagImg?: string | null;
+  flagImg?: any | null;
 
   @ApiProperty({
     required: false,
@@ -48,6 +46,18 @@ export class CreateCountryDto {
   @IsOptional()
   @IsString()
   countryCode?: string | null;
+
+  @ApiProperty({ required: false, type: Number })
+  @IsOptional()
+  latitude?: number | null;
+
+  @ApiProperty({ required: false, type: Number })
+  @IsOptional()
+  longitude?: number | null;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  localisation?: any;
 
   // Don't forget to use the class-validator decorators in the DTO properties.
 }

@@ -25,7 +25,12 @@ export class CityAreasService {
   async create(createCityAreaDto: CreateCityAreaDto) {
     let localisation: Localisation | null | undefined = undefined;
 
-    if (createCityAreaDto.localisation) {
+    if (createCityAreaDto.latitude !== undefined && createCityAreaDto.longitude !== undefined) {
+      localisation = {
+        latitude: Number(createCityAreaDto.latitude),
+        longitude: Number(createCityAreaDto.longitude),
+      } as Localisation;
+    } else if (createCityAreaDto.localisation) {
       const localisationObject = await this.localisationService.findById(
         createCityAreaDto.localisation.id,
       );
@@ -130,14 +135,48 @@ export class CityAreasService {
       city = null;
     }
 
+    const currentCityArea = await this.cityAreaRepository.findById(id);
+    if (!currentCityArea) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: { cityArea: 'notExists' },
+      });
+    }
+
+    let localisation: any = undefined;
+    if (updateCityAreaDto.latitude !== undefined && updateCityAreaDto.longitude !== undefined) {
+      localisation = {
+        id: currentCityArea.localisation?.id || undefined,
+        latitude: Number(updateCityAreaDto.latitude),
+        longitude: Number(updateCityAreaDto.longitude),
+      };
+    } else if (updateCityAreaDto.latitude === null || updateCityAreaDto.longitude === null) {
+      localisation = null;
+    } else {
+      localisation = currentCityArea.localisation;
+    }
+
     return this.cityAreaRepository.update(id, {
+      ...currentCityArea,
       city,
       nameAr: updateCityAreaDto.nameAr,
       nameFr: updateCityAreaDto.nameFr,
+      localisation,
     });
   }
 
-  remove(id: CityArea['id']) {
-    return this.cityAreaRepository.remove(id);
+  // remove(id: CityArea['id']) {
+  //   return this.cityAreaRepository.remove(id);
+  // }
+
+   async remove(id: CityArea['id']): Promise<void> {
+    const cityArea = await this.cityAreaRepository.findById(id);
+
+    if(cityArea?.localisation?.id) {
+      await this.localisationService.remove(cityArea.localisation.id);
+    }
+
+    await this.cityAreaRepository.remove(id);
   }
+
 }

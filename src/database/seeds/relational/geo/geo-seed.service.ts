@@ -28,7 +28,7 @@ export class GeoSeedService {
           nameAr: 'المغرب',
           nameFr: 'Maroc',
           countryCode: 'MA',
-          flagImg: 'https://flagcdn.com/w320/ma.png',
+          // flagImg: 'https://flagcdn.com/w320/ma.png',
         }),
       );
     }
@@ -36,9 +36,9 @@ export class GeoSeedService {
     // --- 2. SEED CITY ---
     // Fix: Use 'idCountry' or 'country' depending on how it's defined in CityEntity
     // If TypeORM complained, use the object relation:
-    const city = await this.cityRepository.findOne({
+    const city = country ? await this.cityRepository.findOne({
       where: { nameEn: 'Fes', country: { id: country.id } },
-    });
+    }) : null;
 
     // --- 3. SEED CITY AREA ---
     if (city) {

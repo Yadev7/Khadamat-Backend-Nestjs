@@ -13,7 +13,7 @@ export class LocalisationsService {
   constructor(
     // Dependencies here
     private readonly localisationRepository: LocalisationRepository,
-  ) {}
+  ) { }
 
   async create(createLocalisationDto: CreateLocalisationDto) {
     // Do not remove comment below.
@@ -23,7 +23,6 @@ export class LocalisationsService {
       // Do not remove comment below.
       // <creating-property-payload />
       latitude: createLocalisationDto.latitude,
-
       longitude: createLocalisationDto.longitude,
     });
   }
@@ -54,14 +53,9 @@ export class LocalisationsService {
 
     updateLocalisationDto: UpdateLocalisationDto,
   ) {
-    // Do not remove comment below.
-    // <updating-property />
 
     return this.localisationRepository.update(id, {
-      // Do not remove comment below.
-      // <updating-property-payload />
       latitude: updateLocalisationDto.latitude,
-
       longitude: updateLocalisationDto.longitude,
     });
   }

@@ -1,3 +1,4 @@
+import { Localisation } from 'src/localisations/domain/localisation';
 import { Country } from '../../countries/domain/country';
 import { ApiProperty } from '@nestjs/swagger';
 export class City {
@@ -41,6 +42,12 @@ export class City {
 
   @ApiProperty()
   updatedAt?: Date;
-  lat: number | null | undefined;
-  lng: number | null | undefined;
+  // localisation: any;
+
+  @ApiProperty({
+    type: () => Localisation,
+    nullable: true,
+  })
+  localisation?: Localisation;
+
 }

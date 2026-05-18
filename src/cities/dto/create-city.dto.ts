@@ -64,22 +64,29 @@ export class CreateCityDto {
   @IsOptional()
   @IsString()
   nameFr?: string | null;
+  @ApiProperty({
+    required: false,
+    type: () => Number,
+  })
+  @IsOptional()
+  latitude?: number | null;
 
   @ApiProperty({
     required: false,
     type: () => Number,
   })
   @IsOptional()
-  @IsNumber()
-  lat?: number | null;
+  longitude?: number | null;
 
   @ApiProperty({
     required: false,
-    type: () => Number,
+    type: () => Object,
   })
   @IsOptional()
-  @IsNumber()
-  lng?: number | null;
+  localisation?: any | null;
+
+
+
 
   // Don't forget to use the class-validator decorators in the DTO properties.
 }

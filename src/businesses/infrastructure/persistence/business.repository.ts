@@ -1,11 +1,18 @@
+import { EntityManager } from 'typeorm';
 import { DeepPartial } from '../../../utils/types/deep-partial.type';
 import { NullableType } from '../../../utils/types/nullable.type';
 import { IPaginationOptions } from '../../../utils/types/pagination-options';
 import { Business } from '../../domain/business';
 
 export abstract class BusinessRepository {
+  // abstract create(
+  //   data: Omit<Business, 'id' | 'createdAt' | 'updatedAt'>,
+  //   manager?: any,
+  // ): Promise<Business>;
+
   abstract create(
-    data: Omit<Business, 'id' | 'createdAt' | 'updatedAt'>,
+    data: Business, 
+    transactionManager?: EntityManager // Add this
   ): Promise<Business>;
 
   abstract findAllWithPagination({

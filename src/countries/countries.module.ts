@@ -2,6 +2,7 @@ import {
   // do not remove this comment
   Module,
 } from '@nestjs/common';
+import { LocalisationsModule } from '../localisations/localisations.module';
 import { CountriesService } from './countries.service';
 import { CountriesController } from './countries.controller';
 import { RelationalCountryPersistenceModule } from './infrastructure/persistence/relational/relational-persistence.module';
@@ -10,6 +11,7 @@ import { RelationalCountryPersistenceModule } from './infrastructure/persistence
   imports: [
     // do not remove this comment
     RelationalCountryPersistenceModule,
+    LocalisationsModule,
   ],
   controllers: [CountriesController],
   providers: [CountriesService],

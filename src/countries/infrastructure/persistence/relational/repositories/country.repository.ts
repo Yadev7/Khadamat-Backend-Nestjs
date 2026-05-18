@@ -7,6 +7,7 @@ import { Country } from '../../../../domain/country';
 import { CountryRepository } from '../../country.repository';
 import { CountryMapper } from '../mappers/country.mapper';
 import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
+import { LocalisationEntity } from '../../../../../localisations/infrastructure/persistence/relational/entities/localisation.entity';
 
 @Injectable()
 export class CountryRelationalRepository implements CountryRepository {
@@ -31,6 +32,7 @@ export class CountryRelationalRepository implements CountryRepository {
     const entities = await this.countryRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      relations: ['localisation', 'flagImg'],
     });
 
     return entities.map((entity) => CountryMapper.toDomain(entity));
@@ -39,6 +41,7 @@ export class CountryRelationalRepository implements CountryRepository {
   async findById(id: Country['id']): Promise<NullableType<Country>> {
     const entity = await this.countryRepository.findOne({
       where: { id },
+      relations: ['localisation', 'flagImg'],
     });
 
     return entity ? CountryMapper.toDomain(entity) : null;
@@ -47,6 +50,7 @@ export class CountryRelationalRepository implements CountryRepository {
   async findByIds(ids: Country['id'][]): Promise<Country[]> {
     const entities = await this.countryRepository.find({
       where: { id: In(ids) },
+      relations: ['localisation', 'flagImg'],
     });
 
     return entities.map((entity) => CountryMapper.toDomain(entity));
@@ -55,20 +59,28 @@ export class CountryRelationalRepository implements CountryRepository {
   async update(id: Country['id'], payload: Partial<Country>): Promise<Country> {
     const entity = await this.countryRepository.findOne({
       where: { id },
+      relations: ['localisation', 'flagImg'],
     });
 
     if (!entity) {
       throw new Error('Record not found');
     }
 
-    const updatedEntity = await this.countryRepository.save(
-      this.countryRepository.create(
-        CountryMapper.toPersistence({
-          ...CountryMapper.toDomain(entity),
-          ...payload,
-        }),
-      ),
-    );
+    const mergedDomain = {
+      ...CountryMapper.toDomain(entity),
+      ...payload,
+    };
+    const persistenceModel = CountryMapper.toPersistence(mergedDomain);
+
+    Object.assign(entity, persistenceModel);
+
+    if (persistenceModel.localisation) {
+      entity.localisation = Object.assign(entity.localisation || new LocalisationEntity(), persistenceModel.localisation);
+    } else if (persistenceModel.localisation === null) {
+      entity.localisation = null;
+    }
+
+    const updatedEntity = await this.countryRepository.save(entity);
 
     return CountryMapper.toDomain(updatedEntity);
   }

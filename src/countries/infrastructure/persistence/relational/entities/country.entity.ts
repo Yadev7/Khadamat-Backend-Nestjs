@@ -4,18 +4,23 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   Column,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { EntityRelationalHelper } from '../../../../../utils/relational-entity-helper';
+import { LocalisationEntity } from '../../../../../localisations/infrastructure/persistence/relational/entities/localisation.entity';
+import { FileEntity } from '../../../../../files/infrastructure/persistence/relational/entities/file.entity';
 
 @Entity({
   name: 'country',
 })
 export class CountryEntity extends EntityRelationalHelper {
-  @Column({
+  @OneToOne(() => FileEntity, {
+    eager: true,
     nullable: true,
-    type: String,
   })
-  flagImg?: string | null;
+  @JoinColumn()
+  flagImg?: FileEntity | null;
 
   @Column({
     nullable: true,
@@ -40,6 +45,18 @@ export class CountryEntity extends EntityRelationalHelper {
     type: String,
   })
   countryCode?: string | null;
+
+  @Column({ name: 'localisationId', nullable: true, type: 'uuid' })
+  localisationId?: string | null;
+
+  @OneToOne(() => LocalisationEntity, {
+    eager: true,
+    cascade: true,
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'localisationId' })
+  localisation?: LocalisationEntity | null;
 
   @PrimaryGeneratedColumn('uuid')
   id!: string;
