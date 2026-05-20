@@ -14,7 +14,6 @@ export class CityAreaMapper {
       domainEntity.localisation = null;
     }
 
-
     if (raw.city) {
       domainEntity.city = CityMapper.toDomain(raw.city);
     } else if (raw.city === null) {
@@ -41,7 +40,6 @@ export class CityAreaMapper {
     } else if (domainEntity.localisation === null) {
       persistenceEntity.localisation = null;
     }
-
 
     if (domainEntity.city) {
       persistenceEntity.city = CityMapper.toPersistence(domainEntity.city);

@@ -37,7 +37,9 @@ export class CountryMapper {
   static toPersistence(domainEntity: Country): CountryEntity {
     const persistenceEntity = new CountryEntity();
     if (domainEntity.flagImg) {
-      persistenceEntity.flagImg = FileMapper.toPersistence(domainEntity.flagImg);
+      persistenceEntity.flagImg = FileMapper.toPersistence(
+        domainEntity.flagImg,
+      );
     } else if (domainEntity.flagImg === null) {
       persistenceEntity.flagImg = null;
     }

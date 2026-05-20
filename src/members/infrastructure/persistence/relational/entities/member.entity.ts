@@ -20,7 +20,13 @@ import { EntityRelationalHelper } from '../../../../../utils/relational-entity-h
 })
 export class MemberEntity extends EntityRelationalHelper {
   // Change nullable to true to allow Enterprise members without a personal User link
-  @OneToOne(() => UserEntity, { eager: false, nullable: true })
+  @OneToOne(() => UserEntity, {
+    eager: false,
+    nullable: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'userId' })
   user?: UserEntity | null;
 
@@ -30,7 +36,13 @@ export class MemberEntity extends EntityRelationalHelper {
   entreprise?: EntrepriseEntity | null;
 
   // Contact should probably remain mandatory (nullable: false)
-  @OneToOne(() => ContactEntity, { eager: false, nullable: false })
+  @OneToOne(() => ContactEntity, {
+    eager: false,
+    cascade: true, // يسمح بحفظ السطر في جدول localisation تلقائياً عند حفظ المدينة
+    nullable: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'contactId' })
   contact?: ContactEntity;
 

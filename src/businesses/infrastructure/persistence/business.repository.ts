@@ -11,8 +11,8 @@ export abstract class BusinessRepository {
   // ): Promise<Business>;
 
   abstract create(
-    data: Business, 
-    transactionManager?: EntityManager // Add this
+    data: Business,
+    transactionManager?: EntityManager, // Add this
   ): Promise<Business>;
 
   abstract findAllWithPagination({

@@ -14,7 +14,7 @@ export class BusinessRelationalRepository implements BusinessRepository {
   constructor(
     @InjectRepository(BusinessEntity)
     private readonly repository: Repository<BusinessEntity>,
-  ) { }
+  ) {}
 
   async create(
     data: Business,
@@ -45,16 +45,22 @@ export class BusinessRelationalRepository implements BusinessRepository {
       .leftJoinAndSelect('business.flyer', 'flyer');
 
     if (filterOptions?.serviceId) {
-      query.andWhere('service.id = :serviceId', { serviceId: filterOptions.serviceId });
+      query.andWhere('service.id = :serviceId', {
+        serviceId: filterOptions.serviceId,
+      });
     }
 
     if (filterOptions?.cityId) {
       // نفترض أن العلاقة هي address -> city
-      query.andWhere('address.cityId = :cityId', { cityId: filterOptions.cityId });
+      query.andWhere('address.cityId = :cityId', {
+        cityId: filterOptions.cityId,
+      });
     }
 
     if (filterOptions?.zoneId) {
-      query.andWhere('address.zoneId = :zoneId', { zoneId: filterOptions.zoneId });
+      query.andWhere('address.zoneId = :zoneId', {
+        zoneId: filterOptions.zoneId,
+      });
     }
 
     query

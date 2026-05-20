@@ -55,7 +55,9 @@ export class CityMapper {
 
     // ربط الدولة
     if (domainEntity.country) {
-      persistenceEntity.country = CountryMapper.toPersistence(domainEntity.country);
+      persistenceEntity.country = CountryMapper.toPersistence(
+        domainEntity.country,
+      );
     } else if (domainEntity.country === null) {
       persistenceEntity.country = null;
     }
@@ -63,7 +65,7 @@ export class CityMapper {
     // 🚀 الحماية القصوى والـ Cascade الصريح للموقع هنا:
     if (domainEntity.localisation) {
       const locEntity = new LocalisationEntity();
-      
+
       // تأكد من مطابقة أسماء الحقول كما هي بجدول الـ localisation.entity.ts الخاص بك
       if (domainEntity.localisation.id) {
         locEntity.id = domainEntity.localisation.id;
@@ -76,8 +78,10 @@ export class CityMapper {
       persistenceEntity.localisation = null;
     }
 
-    if (domainEntity.createdAt) persistenceEntity.createdAt = domainEntity.createdAt;
-    if (domainEntity.updatedAt) persistenceEntity.updatedAt = domainEntity.updatedAt;
+    if (domainEntity.createdAt)
+      persistenceEntity.createdAt = domainEntity.createdAt;
+    if (domainEntity.updatedAt)
+      persistenceEntity.updatedAt = domainEntity.updatedAt;
 
     return persistenceEntity;
   }
@@ -113,7 +117,6 @@ export class CityMapper {
 
   //   // persistenceEntity.createdAt = domainEntity.createdAt!;
   //   // persistenceEntity.updatedAt = domainEntity.updatedAt!;
-
 
   //   // نسخ الـ Timestamps
   //   if (domainEntity.createdAt) {

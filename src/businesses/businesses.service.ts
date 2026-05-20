@@ -11,7 +11,6 @@ import { BusinessRepository } from './infrastructure/persistence/business.reposi
 import { IPaginationOptions } from '../utils/types/pagination-options';
 import { Business } from './domain/business';
 
-
 import { ContactsService } from '../contacts/contacts.service';
 import { Contact } from '../contacts/domain/contact';
 import { ServicesService } from '../services/services.service';
@@ -20,11 +19,9 @@ import { MembersService } from '../members/members.service';
 import { Member } from '../members/domain/member';
 import { FilesService } from 'src/files/files.service';
 
-
 import { FileType } from 'src/files/domain/file';
 import { FileMapper } from 'src/files/infrastructure/persistence/relational/mappers/file.mapper';
 import { FileEntity } from 'src/files/infrastructure/persistence/relational/entities/file.entity';
-
 
 import { DataSource } from 'typeorm';
 
@@ -38,8 +35,7 @@ export class BusinessesService {
     private readonly filesService: FilesService,
     private readonly businessRepository: BusinessRepository,
     private dataSource: DataSource,
-  ) { }
-
+  ) {}
 
   private async mapFile(
     fileDto?: { id: string } | null,
@@ -67,7 +63,6 @@ export class BusinessesService {
   //     });
   //   }
 
-
   //   let contact: Contact | undefined;
   //   if (createBusinessDto.contact?.id) {
   //     const contactObj = await this.contactService.findById(
@@ -84,7 +79,6 @@ export class BusinessesService {
   //     if (serviceObj) service = serviceObj;
   //   }
 
-
   //   const flyer = await this.mapFile(createBusinessDto.flyer);
   //   const audioAr = await this.mapFile(createBusinessDto.audioAr);
   //   const audioFr = await this.mapFile(createBusinessDto.audioFr);
@@ -92,7 +86,6 @@ export class BusinessesService {
   //   const videoAr = await this.mapFile(createBusinessDto.videoAr);
   //   const videoFr = await this.mapFile(createBusinessDto.videoFr);
   //   const videoEn = await this.mapFile(createBusinessDto.videoEn);
-
 
   //   const {
   //     owner: _o,
@@ -108,7 +101,6 @@ export class BusinessesService {
   //     manager: _m,
   //     ...restOfDto
   //   } = createBusinessDto;
-
 
   //   return this.businessRepository.create({
   //     ...restOfDto,
@@ -137,25 +129,37 @@ export class BusinessesService {
         throw new UnprocessableEntityException({ owner: 'ownerIsRequired' });
       }
 
-      const owner = await this.memberService.findById(createBusinessDto.owner.id);
-      if (!owner) throw new UnprocessableEntityException({ owner: 'ownerNotExists' });
+      const owner = await this.memberService.findById(
+        createBusinessDto.owner.id,
+      );
+      if (!owner)
+        throw new UnprocessableEntityException({ owner: 'ownerNotExists' });
 
       // 2. Fetch Relations
       let contact: Contact | null | undefined;
       if (createBusinessDto.contact?.id) {
-        contact = await this.contactService.findById(createBusinessDto.contact.id as any);
+        contact = await this.contactService.findById(
+          createBusinessDto.contact.id as any,
+        );
       }
 
       let service: Service | null | undefined;
       if (createBusinessDto.service?.id) {
-        service = await this.serviceService.findById(createBusinessDto.service.id);
+        service = await this.serviceService.findById(
+          createBusinessDto.service.id,
+        );
       }
 
       // 3. Map Files
       const flyer = await this.mapFile(createBusinessDto.flyer);
       // ... map your other files (audio, video) here ...
 
-      const { owner: _o, contact: _c, service: _s, ...restOfDto } = createBusinessDto;
+      const {
+        owner: _o,
+        contact: _c,
+        service: _s,
+        ...restOfDto
+      } = createBusinessDto;
 
       // 4. Save via Repository passing the Transaction Manager
       // We modify the repository to accept the manager
@@ -179,7 +183,6 @@ export class BusinessesService {
 
       await queryRunner.commitTransaction();
       return result;
-
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -229,7 +232,6 @@ export class BusinessesService {
       service = null;
     }
 
-
     const flyer = await this.mapFile(updateBusinessDto.flyer);
     const audioAr = await this.mapFile(updateBusinessDto.audioAr);
     const audioFr = await this.mapFile(updateBusinessDto.audioFr);
@@ -237,7 +239,6 @@ export class BusinessesService {
     const videoAr = await this.mapFile(updateBusinessDto.videoAr);
     const videoFr = await this.mapFile(updateBusinessDto.videoFr);
     const videoEn = await this.mapFile(updateBusinessDto.videoEn);
-
 
     let owner: Member | undefined = undefined;
     if (updateBusinessDto.owner) {
@@ -267,7 +268,6 @@ export class BusinessesService {
       manager = managerObject;
     }
 
-
     const {
       owner: _o,
       contact: _c,
@@ -282,7 +282,6 @@ export class BusinessesService {
       manager: _m,
       ...restOfDto
     } = updateBusinessDto;
-
 
     return this.businessRepository.update(id, {
       ...restOfDto,

@@ -22,7 +22,7 @@ export class CitiesService {
     private readonly countryService: CountriesService,
     private readonly cityRepository: CityRepository,
     private readonly localisationService: LocalisationsService,
-  ) { }
+  ) {}
 
   async create(createCityDto: CreateCityDto) {
     let country: Country | null | undefined = undefined;
@@ -53,12 +53,14 @@ export class CitiesService {
     //   } as Localisation
     //   : undefined;
 
-    const localisation = (createCityDto.latitude !== undefined && createCityDto.longitude !== undefined)
-  ? {
-      latitude: Number(createCityDto.latitude),
-      longitude: Number(createCityDto.longitude),
-    } as Localisation
-  : undefined;
+    const localisation =
+      createCityDto.latitude !== undefined &&
+      createCityDto.longitude !== undefined
+        ? ({
+            latitude: Number(createCityDto.latitude),
+            longitude: Number(createCityDto.longitude),
+          } as Localisation)
+        : undefined;
 
     return this.cityRepository.create({
       country,
@@ -120,7 +122,7 @@ export class CitiesService {
   //   if (updateCityDto.latitude && updateCityDto.longitude) {
   //     localisation = {
   //       // إذا وجد موقع سابق، نمرر المعرف الخاص به ليتم التحديث (Update) وليس الإضافة (Insert)
-  //       id: currentCity?.localisation?.id, 
+  //       id: currentCity?.localisation?.id,
   //       latitude: updateCityDto.latitude,
   //       longitude: updateCityDto.longitude,
   //     };
@@ -135,14 +137,15 @@ export class CitiesService {
   //   });
   // }
 
-
   // src/cities/cities.service.ts
 
   async update(id: City['id'], updateCityDto: UpdateCityDto) {
     let country: Country | null | undefined = undefined;
 
     if (updateCityDto.country) {
-      const countryObject = await this.countryService.findById(updateCityDto.country.id);
+      const countryObject = await this.countryService.findById(
+        updateCityDto.country.id,
+      );
       if (!countryObject) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -172,7 +175,10 @@ export class CitiesService {
         latitude: Number(updateCityDto.latitude),
         longitude: Number(updateCityDto.longitude),
       };
-    } else if (updateCityDto.latitude === null || updateCityDto.longitude === null) {
+    } else if (
+      updateCityDto.latitude === null ||
+      updateCityDto.longitude === null
+    ) {
       localisation = null;
     } else {
       localisation = currentCity.localisation;
@@ -189,20 +195,16 @@ export class CitiesService {
     });
   }
 
-
-
   // remove(id: City['id']) {
   //   return this.cityRepository.remove(id);
   // }
 
-
   async remove(id: City['id']): Promise<void> {
     const city = await this.cityRepository.findById(id);
-    if(city?.localisation?.id){
+    if (city?.localisation?.id) {
       await this.localisationService.remove(city.localisation.id);
     }
     await this.cityRepository.remove(id);
     // تصفية وحذف سطر المدينة (وإذا أردت مسح الموقع، يفضل معالجته عبر المستودع المخصص له أو الاعتماد على دالة الحذف المباشرة)
-  
   }
 }

@@ -75,7 +75,10 @@ export class CountryRelationalRepository implements CountryRepository {
     Object.assign(entity, persistenceModel);
 
     if (persistenceModel.localisation) {
-      entity.localisation = Object.assign(entity.localisation || new LocalisationEntity(), persistenceModel.localisation);
+      entity.localisation = Object.assign(
+        entity.localisation || new LocalisationEntity(),
+        persistenceModel.localisation,
+      );
     } else if (persistenceModel.localisation === null) {
       entity.localisation = null;
     }

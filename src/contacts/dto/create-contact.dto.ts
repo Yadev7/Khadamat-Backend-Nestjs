@@ -1,12 +1,7 @@
 import { CreateAddressDto } from '../../addresses/dto/create-address.dto'; // Ensure this path is correct
-import {
-  IsString,
-  IsOptional,
-  IsNumber,
-  ValidateNested,
-} from 'class-validator';
+import { IsString, IsOptional, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type, Transform } from 'class-transformer'; // Added Transform here
+import { Type } from 'class-transformer';
 
 export class CreateContactDto {
   @ApiProperty({ required: false, type: () => CreateAddressDto })
@@ -20,17 +15,15 @@ export class CreateContactDto {
   @IsString()
   email?: string | null;
 
-  @ApiProperty({ required: false, example: 212537000000 }) // Keep ApiProperty so it shows in Swagger
+  @ApiProperty({ required: false, example: '212537000000' })
   @IsOptional()
-  @IsNumber()
-  @Transform(({ value }) => (value ? Number(value) : null)) // Handles null/empty safely
-  phoneGround?: number | null;
+  @IsString()
+  phoneGround?: string | null;
 
-  @ApiProperty({ required: false, example: 212661000000 }) // Keep ApiProperty so it shows in Swagger
+  @ApiProperty({ required: false, example: '212661000000' })
   @IsOptional()
-  @IsNumber()
-  @Transform(({ value }) => (value ? Number(value) : null))
-  phoneCell?: number | null;
+  @IsString()
+  phoneCell?: string | null;
 
   @ApiProperty({ required: false })
   @IsOptional()

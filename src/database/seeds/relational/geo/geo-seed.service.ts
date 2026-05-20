@@ -36,9 +36,11 @@ export class GeoSeedService {
     // --- 2. SEED CITY ---
     // Fix: Use 'idCountry' or 'country' depending on how it's defined in CityEntity
     // If TypeORM complained, use the object relation:
-    const city = country ? await this.cityRepository.findOne({
-      where: { nameEn: 'Fes', country: { id: country.id } },
-    }) : null;
+    const city = country
+      ? await this.cityRepository.findOne({
+          where: { nameEn: 'Fes', country: { id: country.id } },
+        })
+      : null;
 
     // --- 3. SEED CITY AREA ---
     if (city) {

@@ -27,15 +27,15 @@ export class ContactEntity extends EntityRelationalHelper {
 
   @Column({
     nullable: true,
-    type: Number,
+    type: String,
   })
-  phoneGround?: number | null;
+  phoneGround?: string | null;
 
   @Column({
     nullable: true,
-    type: Number,
+    type: String,
   })
-  phoneCell?: number | null;
+  phoneCell?: string | null;
 
   @Column({
     nullable: true,

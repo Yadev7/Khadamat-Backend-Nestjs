@@ -21,7 +21,10 @@ export class CountriesService {
   async create(createCountryDto: CreateCountryDto) {
     let localisation: Localisation | null | undefined = undefined;
 
-    if (createCountryDto.latitude !== undefined && createCountryDto.longitude !== undefined) {
+    if (
+      createCountryDto.latitude !== undefined &&
+      createCountryDto.longitude !== undefined
+    ) {
       localisation = {
         latitude: Number(createCountryDto.latitude),
         longitude: Number(createCountryDto.longitude),
@@ -74,10 +77,7 @@ export class CountriesService {
     return this.countryRepository.findByIds(ids);
   }
 
-  async update(
-    id: Country['id'],
-    updateCountryDto: UpdateCountryDto,
-  ) {
+  async update(id: Country['id'], updateCountryDto: UpdateCountryDto) {
     const currentCountry = await this.countryRepository.findById(id);
     if (!currentCountry) {
       throw new UnprocessableEntityException({
@@ -87,13 +87,19 @@ export class CountriesService {
     }
 
     let localisation: any = undefined;
-    if (updateCountryDto.latitude !== undefined && updateCountryDto.longitude !== undefined) {
+    if (
+      updateCountryDto.latitude !== undefined &&
+      updateCountryDto.longitude !== undefined
+    ) {
       localisation = {
         id: currentCountry.localisation?.id || undefined,
         latitude: Number(updateCountryDto.latitude),
         longitude: Number(updateCountryDto.longitude),
       };
-    } else if (updateCountryDto.latitude === null || updateCountryDto.longitude === null) {
+    } else if (
+      updateCountryDto.latitude === null ||
+      updateCountryDto.longitude === null
+    ) {
       localisation = null;
     } else {
       localisation = currentCountry.localisation;

@@ -45,13 +45,19 @@ export class LocalisationEntity extends EntityRelationalHelper {
   longitude?: number | null;
 
   // العلاقة العكسية (Inverse Side) - لا تنشئ أي عمود في جدول localisation
-  @OneToOne(() => CityEntity, (city) => city.localisation, { onDelete: 'CASCADE' })
+  @OneToOne(() => CityEntity, (city) => city.localisation, {
+    onDelete: 'CASCADE',
+  })
   city?: CityEntity;
 
-  @OneToOne(() => CityAreaEntity, (cityArea) => cityArea.localisation, { onDelete: 'CASCADE' })
+  @OneToOne(() => CityAreaEntity, (cityArea) => cityArea.localisation, {
+    onDelete: 'CASCADE',
+  })
   cityArea?: CityAreaEntity;
 
-  @OneToOne(() => CountryEntity, (country) => country.localisation, { onDelete: 'CASCADE' })
+  @OneToOne(() => CountryEntity, (country) => country.localisation, {
+    onDelete: 'CASCADE',
+  })
   country?: CountryEntity;
 
   @CreateDateColumn()

@@ -13,7 +13,7 @@ export class LocalisationsService {
   constructor(
     // Dependencies here
     private readonly localisationRepository: LocalisationRepository,
-  ) { }
+  ) {}
 
   async create(createLocalisationDto: CreateLocalisationDto) {
     // Do not remove comment below.
@@ -53,7 +53,6 @@ export class LocalisationsService {
 
     updateLocalisationDto: UpdateLocalisationDto,
   ) {
-
     return this.localisationRepository.update(id, {
       latitude: updateLocalisationDto.latitude,
       longitude: updateLocalisationDto.longitude,

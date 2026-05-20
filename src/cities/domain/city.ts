@@ -49,5 +49,4 @@ export class City {
     nullable: true,
   })
   localisation?: Localisation;
-
 }

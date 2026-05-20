@@ -14,7 +14,7 @@ export class CityRelationalRepository implements CityRepository {
   constructor(
     @InjectRepository(CityEntity)
     private readonly cityRepository: Repository<CityEntity>,
-  ) { }
+  ) {}
   // async create(data: City): Promise<City> {
   //   const persistenceModel = CityMapper.toPersistence(data);
   //   const newEntity = await this.cityRepository.save(
@@ -84,7 +84,10 @@ export class CityRelationalRepository implements CityRepository {
 
     // إذا تم إرسال كائن موقع محدث، ندمجه مع كائن الموقع التابع للـ Entity الأصلية
     if (persistenceModel.localisation) {
-      entity.localisation = Object.assign(entity.localisation || new LocalisationEntity(), persistenceModel.localisation);
+      entity.localisation = Object.assign(
+        entity.localisation || new LocalisationEntity(),
+        persistenceModel.localisation,
+      );
     } else if (persistenceModel.localisation === null) {
       entity.localisation = null;
     }

@@ -15,16 +15,16 @@ export class Contact {
   email?: string | null;
 
   @ApiProperty({
-    type: () => Number,
+    type: () => String,
     nullable: true,
   })
-  phoneGround?: number | null;
+  phoneGround?: string | null;
 
   @ApiProperty({
-    type: () => Number,
+    type: () => String,
     nullable: true,
   })
-  phoneCell?: number | null;
+  phoneCell?: string | null;
 
   @ApiProperty({
     type: () => String,

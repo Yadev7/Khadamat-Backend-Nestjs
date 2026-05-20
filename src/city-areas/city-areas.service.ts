@@ -25,7 +25,10 @@ export class CityAreasService {
   async create(createCityAreaDto: CreateCityAreaDto) {
     let localisation: Localisation | null | undefined = undefined;
 
-    if (createCityAreaDto.latitude !== undefined && createCityAreaDto.longitude !== undefined) {
+    if (
+      createCityAreaDto.latitude !== undefined &&
+      createCityAreaDto.longitude !== undefined
+    ) {
       localisation = {
         latitude: Number(createCityAreaDto.latitude),
         longitude: Number(createCityAreaDto.longitude),
@@ -144,13 +147,19 @@ export class CityAreasService {
     }
 
     let localisation: any = undefined;
-    if (updateCityAreaDto.latitude !== undefined && updateCityAreaDto.longitude !== undefined) {
+    if (
+      updateCityAreaDto.latitude !== undefined &&
+      updateCityAreaDto.longitude !== undefined
+    ) {
       localisation = {
         id: currentCityArea.localisation?.id || undefined,
         latitude: Number(updateCityAreaDto.latitude),
         longitude: Number(updateCityAreaDto.longitude),
       };
-    } else if (updateCityAreaDto.latitude === null || updateCityAreaDto.longitude === null) {
+    } else if (
+      updateCityAreaDto.latitude === null ||
+      updateCityAreaDto.longitude === null
+    ) {
       localisation = null;
     } else {
       localisation = currentCityArea.localisation;
@@ -169,14 +178,13 @@ export class CityAreasService {
   //   return this.cityAreaRepository.remove(id);
   // }
 
-   async remove(id: CityArea['id']): Promise<void> {
+  async remove(id: CityArea['id']): Promise<void> {
     const cityArea = await this.cityAreaRepository.findById(id);
 
-    if(cityArea?.localisation?.id) {
+    if (cityArea?.localisation?.id) {
       await this.localisationService.remove(cityArea.localisation.id);
     }
 
     await this.cityAreaRepository.remove(id);
   }
-
 }
