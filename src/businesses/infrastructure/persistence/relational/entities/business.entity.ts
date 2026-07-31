@@ -1,7 +1,5 @@
 import { ContactEntity } from '../../../../../contacts/infrastructure/persistence/relational/entities/contact.entity';
-
 import { ServiceEntity } from '../../../../../services/infrastructure/persistence/relational/entities/service.entity';
-
 import {
   CreateDateColumn,
   Entity,
@@ -20,6 +18,7 @@ import { EvaluationEntity } from 'src/evaluations/infrastructure/persistence/rel
 import { CallEntity } from 'src/calls/infrastructure/persistence/relational/entities/call.entity';
 import { ReportEntity } from 'src/reports/infrastructure/persistence/relational/entities/report.entity';
 import { IsNotEmpty } from 'class-validator';
+import { LocalisationEntity } from 'src/localisations/infrastructure/persistence/relational/entities/localisation.entity';
 
 @Entity({
   name: 'business',
@@ -52,24 +51,26 @@ export class BusinessEntity extends EntityRelationalHelper {
   videoEn?: FileEntity | null;
 
   @OneToOne(() => FileEntity, { eager: false, nullable: true })
-  @JoinColumn({ name: 'flyerId' }) // Maps to your #flyerId requirement
+  @JoinColumn({ name: 'flyerId' })
   flyer?: FileEntity | null;
 
-  @ManyToOne(() => MemberEntity, { eager: false, nullable: false })
+  // Added onDelete: 'CASCADE' to clear business records if the owner account is deleted
+  @ManyToOne(() => MemberEntity, { eager: false, nullable: false, onDelete: 'CASCADE' })
   @IsNotEmpty()
-  @JoinColumn({ name: 'ownerId' }) // The legal owner
+  @JoinColumn({ name: 'ownerId' })
   owner?: MemberEntity;
 
-  @ManyToOne(() => MemberEntity, { eager: false, nullable: false })
-  @JoinColumn({ name: 'managerId' }) // The person managing the listing
+  // Added onDelete: 'CASCADE' to handle records where this member acts as manager
+  @ManyToOne(() => MemberEntity, { eager: false, nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'managerId' })
   manager?: MemberEntity;
 
-  // @OneToOne(() => ContactEntity, { eager: false, nullable: false })
-  // @JoinColumn({ name: 'contactId' }) // Directly implements your #contactId requirement
-  // contact!: ContactEntity;
+  @OneToOne(() => LocalisationEntity, { eager: false, nullable: true, cascade: true })
+  @JoinColumn({ name: 'localisationId' })
+  localisation?: LocalisationEntity | null;
 
   @ManyToOne(() => ContactEntity)
-  contact: ContactEntity;
+  contact!: ContactEntity;
 
   @ManyToOne(() => ServiceEntity, { eager: false, nullable: true })
   service?: ServiceEntity | null;
@@ -131,7 +132,7 @@ export class BusinessEntity extends EntityRelationalHelper {
   })
   nameFr?: string | null;
 
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id!: string;
 
   @CreateDateColumn()

@@ -46,85 +46,13 @@ export class BusinessesService {
     return file ? FileMapper.toDomain(file as FileEntity) : undefined;
   }
 
-  // async create(createBusinessDto: CreateBusinessDto): Promise<Business> {
-
-  //   if (!createBusinessDto.owner?.id) {
-  //     throw new UnprocessableEntityException({
-  //       status: HttpStatus.UNPROCESSABLE_ENTITY,
-  //       errors: { owner: 'ownerIsRequired' },
-  //     });
-  //   }
-
-  //   const owner = await this.memberService.findById(createBusinessDto.owner.id);
-  //   if (!owner) {
-  //     throw new UnprocessableEntityException({
-  //       status: HttpStatus.UNPROCESSABLE_ENTITY,
-  //       errors: { owner: 'ownerNotExists' },
-  //     });
-  //   }
-
-  //   let contact: Contact | undefined;
-  //   if (createBusinessDto.contact?.id) {
-  //     const contactObj = await this.contactService.findById(
-  //       createBusinessDto.contact.id as any,
-  //     );
-  //     if (contactObj) contact = contactObj;
-  //   }
-
-  //   let service: Service | undefined;
-  //   if (createBusinessDto.service?.id) {
-  //     const serviceObj = await this.serviceService.findById(
-  //       createBusinessDto.service.id,
-  //     );
-  //     if (serviceObj) service = serviceObj;
-  //   }
-
-  //   const flyer = await this.mapFile(createBusinessDto.flyer);
-  //   const audioAr = await this.mapFile(createBusinessDto.audioAr);
-  //   const audioFr = await this.mapFile(createBusinessDto.audioFr);
-  //   const audioEn = await this.mapFile(createBusinessDto.audioEn);
-  //   const videoAr = await this.mapFile(createBusinessDto.videoAr);
-  //   const videoFr = await this.mapFile(createBusinessDto.videoFr);
-  //   const videoEn = await this.mapFile(createBusinessDto.videoEn);
-
-  //   const {
-  //     owner: _o,
-  //     contact: _c,
-  //     service: _s,
-  //     flyer: _f,
-  //     audioAr: _aAr,
-  //     audioFr: _aFr,
-  //     audioEn: _aEn,
-  //     videoAr: _vAr,
-  //     videoFr: _vFr,
-  //     videoEn: _vEn,
-  //     manager: _m,
-  //     ...restOfDto
-  //   } = createBusinessDto;
-
-  //   return this.businessRepository.create({
-  //     ...restOfDto,
-  //     owner,
-  //     contact,
-  //     service,
-  //     flyer,
-  //     audioAr,
-  //     audioFr,
-  //     audioEn,
-  //     videoAr,
-  //     videoFr,
-  //     videoEn,
-  //     manager: owner,
-  //   });
-  // }
-
   async create(createBusinessDto: CreateBusinessDto): Promise<Business> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // 1. Validations (Keep these inside try for safety)
+      // 1. Validations
       if (!createBusinessDto.owner?.id) {
         throw new UnprocessableEntityException({ owner: 'ownerIsRequired' });
       }
@@ -152,17 +80,30 @@ export class BusinessesService {
 
       // 3. Map Files
       const flyer = await this.mapFile(createBusinessDto.flyer);
-      // ... map your other files (audio, video) here ...
+
+      // 4. Handle localisation creation within the transaction
+      let savedLocalisation: any = null;
+      if (createBusinessDto.localisation) {
+        const { latitude, longitude } = createBusinessDto.localisation;
+        if (latitude && longitude) {
+          const localisationRepo = queryRunner.manager.getRepository('localisation');
+          const newLocEntity = localisationRepo.create({
+            latitude: parseFloat(String(latitude)),
+            longitude: parseFloat(String(longitude)),
+          });
+          savedLocalisation = await localisationRepo.save(newLocEntity);
+        }
+      }
 
       const {
         owner: _o,
         contact: _c,
         service: _s,
+        localisation: _loc,
         ...restOfDto
       } = createBusinessDto;
 
-      // 4. Save via Repository passing the Transaction Manager
-      // We modify the repository to accept the manager
+      // 5. Save via Repository passing the Transaction Manager
       const result = await this.businessRepository.create(
         {
           ...restOfDto,
@@ -170,6 +111,7 @@ export class BusinessesService {
           contact,
           service,
           flyer,
+          localisation: savedLocalisation, 
           audioAr: await this.mapFile(createBusinessDto.audioAr),
           audioFr: await this.mapFile(createBusinessDto.audioFr),
           audioEn: await this.mapFile(createBusinessDto.audioEn),
@@ -177,8 +119,8 @@ export class BusinessesService {
           videoFr: await this.mapFile(createBusinessDto.videoFr),
           videoEn: await this.mapFile(createBusinessDto.videoEn),
           manager: owner,
-        } as any, // Cast to any to bypass the structural mismatch for now
-        queryRunner.manager, // Pass the transactional manager
+        } as any, 
+        queryRunner.manager, 
       );
 
       await queryRunner.commitTransaction();
@@ -306,15 +248,42 @@ export class BusinessesService {
     paginationOptions: IPaginationOptions;
     filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
   }) {
+    // طباعة الفلاتر للتأكد من عبورها بسلام من الـ Controller إلى الـ Repository
+    console.log("💼 Service received filterOptions:", filterOptions);
+
     return this.businessRepository.findAllWithPagination({
       paginationOptions,
       filterOptions,
     });
   }
 
+  // async findAllWithPagination({
+  //   paginationOptions,
+  //   filterOptions,
+  // }: {
+  //   paginationOptions: IPaginationOptions;
+  //   filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
+  // }) {
+  //   // 1. Clean up undefined filters so only active criteria are passed
+  //   const cleanFilters = filterOptions
+  //     ? Object.fromEntries(
+  //         Object.entries(filterOptions).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+  //       )
+  //     : undefined;
+
+  //   console.log("💼 Service cleaned filterOptions:", cleanFilters);
+
+  //   return this.businessRepository.findAllWithPagination({
+  //     paginationOptions,
+  //     filterOptions: cleanFilters,
+  //   });
+  // }
+
   async findById(id: Business['id']): Promise<Business | null> {
     return this.businessRepository.findById(id);
   }
+
+
 
   async remove(id: Business['id']): Promise<void> {
     return this.businessRepository.remove(id);

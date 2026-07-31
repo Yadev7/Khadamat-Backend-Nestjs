@@ -27,6 +27,8 @@ import {
 } from '../utils/dto/infinity-pagination-response.dto';
 import { infinityPagination } from '../utils/infinity-pagination';
 import { FindAllMembersDto } from './dto/find-all-members.dto';
+import { Roles } from 'src/roles/roles.decorator';
+import { RolesGuard } from 'src/roles/roles.guard';
 
 @ApiTags('Members')
 @ApiBearerAuth()
@@ -37,6 +39,14 @@ import { FindAllMembersDto } from './dto/find-all-members.dto';
 })
 export class MembersController {
   constructor(private readonly membersService: MembersService) {}
+
+
+  @Get('dashboard')
+  @Roles(3, 4) // Only Member_Admin and Member_Manager
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  getMemberDashboard() {
+    return this.membersService.getDashboardData();
+}
 
   @Post()
   @ApiCreatedResponse({

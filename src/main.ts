@@ -22,17 +22,37 @@ async function bootstrap() {
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService<AllConfigType>);
 
-  app.useStaticAssets(join(__dirname, '..', 'files'), {
-    prefix: '/files/',
+  const apiPrefix = configService.getOrThrow('app.apiPrefix', { infer: true }) || 'api';
+  const port = configService.getOrThrow('app.port', { infer: true }) || 3001;
+
+  // 1. Global Prefix
+  app.setGlobalPrefix(apiPrefix, {
+    exclude: ['/'],
   });
 
+  // 2. URI Versioning (/api/v1/...)
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+
+  // 3. Static Files Serving (Serves uploads cleanly at /api/v1/files/)
+  app.useStaticAssets(join(__dirname, '..', 'files'), {
+    prefix: `/${apiPrefix}/v1/files/`,
+  });
+
+  // 4. CORS Setup (Ensures Cookie authentication & Next.js origin work smoothly)
+  const frontendDomain = configService.get('app.frontendDomain', { infer: true });
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    frontendDomain,
+  ].filter((origin): origin is string => typeof origin === 'string' && origin.length > 0);
+
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      configService.get('app.frontendDomain', { infer: true }),
-    ].filter((origin): origin is string => typeof origin === 'string'),
+    origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
+    credentials: true, // Crucial for passing 'auth_token' cookies
     allowedHeaders: [
       'Content-Type',
       'Accept',
@@ -44,38 +64,32 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  const apiPrefix = configService.getOrThrow('app.apiPrefix', { infer: true });
-  app.setGlobalPrefix(apiPrefix, {
-    exclude: ['/'],
-  });
-
-  app.enableVersioning({
-    type: VersioningType.URI,
-  });
-
+  // 5. Global Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      transform: true, // CRITICAL: This allows @Type to work!
+      transform: true, // Enables automatic DTO type conversion (e.g. string to number)
       forbidNonWhitelisted: false,
       transformOptions: {
-        enableImplicitConversion: true, // Allows automatic type conversion
+        enableImplicitConversion: true,
       },
     }),
   );
 
+  // 6. Increased Payload Size for Media Uploads
   app.use(json({ limit: '100mb' }));
-
   app.use(urlencoded({ limit: '100mb', extended: true }));
 
+  // 7. Global Interceptors
   app.useGlobalInterceptors(
     new ResolvePromisesInterceptor(),
     new ClassSerializerInterceptor(app.get(Reflector)),
   );
 
+  // 8. Swagger Documentation Setup
   const options = new DocumentBuilder()
     .setTitle('API')
-    .setDescription('API docs')
+    .setDescription('API Documentation')
     .setVersion('1.0')
     .addBearerAuth()
     .addGlobalParameters({
@@ -91,8 +105,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('docs', app, document);
 
-  const port = configService.getOrThrow('app.port', { infer: true });
   await app.listen(port);
+  console.log(`🚀 Server running on http://localhost:${port}/${apiPrefix}/v1`);
 }
 
 void bootstrap();

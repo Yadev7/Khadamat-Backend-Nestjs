@@ -23,7 +23,7 @@ import { EntityRelationalHelper } from '../../../../../utils/relational-entity-h
   name: 'user',
 })
 export class UserEntity extends EntityRelationalHelper {
-  @OneToOne(() => MemberEntity, { eager: true, nullable: true })
+  @OneToOne(() => MemberEntity, { nullable: true })
   @JoinColumn()
   member?: MemberEntity | null;
 

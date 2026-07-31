@@ -5,25 +5,23 @@ import { ServiceDto } from '../../services/dto/service.dto';
 import { FileDto } from '../../files/dto/file.dto';
 
 import {
-  // decorators here
-
   IsString,
   IsOptional,
   ValidateNested,
   IsNotEmptyObject,
   IsNotEmpty,
+  IsNumber,
 } from 'class-validator';
 
 import {
-  // decorators here
   ApiProperty,
 } from '@nestjs/swagger';
 
 import {
-  // decorators here
   Type,
 } from 'class-transformer';
 import { MemberDto } from 'src/members/dto/member.dto';
+import { CreateLocalisationDto } from 'src/localisations/dto/create-localisation.dto';
 
 export class CreateBusinessDto {
   @ApiProperty({
@@ -45,6 +43,15 @@ export class CreateBusinessDto {
   @Type(() => ServiceDto)
   @IsNotEmptyObject()
   service?: ServiceDto | null;
+
+  @ApiProperty({
+    required: false,
+    type: () => CreateLocalisationDto,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateLocalisationDto)
+  localisation?: CreateLocalisationDto | null;
 
   @ApiProperty({
     required: false,

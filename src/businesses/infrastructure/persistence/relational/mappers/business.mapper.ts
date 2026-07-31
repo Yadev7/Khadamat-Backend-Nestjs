@@ -5,12 +5,19 @@ import { MemberMapper } from '../../../../../members/infrastructure/persistence/
 import { FileMapper } from '../../../../../files/infrastructure/persistence/relational/mappers/file.mapper';
 import { BusinessEntity } from '../entities/business.entity';
 import { FileEntity } from '../../../../../files/infrastructure/persistence/relational/entities/file.entity';
+import { LocalisationMapper } from 'src/localisations/infrastructure/persistence/relational/mappers/localisation.mapper';
 
 export class BusinessMapper {
   static toDomain(raw: BusinessEntity): Business {
     const domainEntity = new Business();
 
+    
+
     // Core Relationships
+    if (raw.localisation) {
+      domainEntity.localisation = LocalisationMapper.toDomain(raw.localisation);
+    }
+    
     if (raw.contact) {
       domainEntity.contact = ContactMapper.toDomain(raw.contact);
     }
@@ -58,6 +65,13 @@ export class BusinessMapper {
 
   static toPersistence(domainEntity: Business): BusinessEntity {
     const persistenceEntity = new BusinessEntity();
+
+    // Relationships to Persistence (Core)
+    if (domainEntity.localisation) {
+      persistenceEntity.localisation = LocalisationMapper.toPersistence(
+        domainEntity.localisation,
+      );
+    }
 
     // Relationships to Persistence
     if (domainEntity.contact) {

@@ -27,8 +27,8 @@ import { FindAllBusinessesDto } from './dto/find-all-businesses.dto';
 import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Businesses')
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+// @ApiBearerAuth()
+// @UseGuards(AuthGuard('jwt'))
 @Controller({
   path: 'businesses',
   version: '1',
@@ -44,24 +44,24 @@ export class BusinessesController {
     return this.businessesService.create(createBusinessDto);
   }
 
+
+
   // @Get()
-  // @ApiOkResponse({
-  //   type: InfinityPaginationResponse(Business),
-  // })
+  // @Public()
   // async findAll(
   //   @Query() query: FindAllBusinessesDto,
   // ): Promise<InfinityPaginationResponseDto<Business>> {
   //   const page = query?.page ?? 1;
   //   let limit = query?.limit ?? 10;
-  //   if (limit > 50) {
-  //     limit = 50;
-  //   }
+  //   if (limit > 50) limit = 50;
 
   //   return infinityPagination(
   //     await this.businessesService.findAllWithPagination({
-  //       paginationOptions: {
-  //         page,
-  //         limit,
+  //       paginationOptions: { page, limit },
+  //       filterOptions: {
+  //         cityId: query.cityId,   // Expects cityId from query params
+  //         zoneId: query.zoneId,   // Expects zoneId from query params
+  //         serviceId: query.service // Expects service from query params
   //       },
   //     }),
   //     { page, limit },
@@ -83,26 +83,58 @@ export class BusinessesController {
         filterOptions: {
           cityId: query.cityId,
           zoneId: query.zoneId,
-          serviceId: query.service, // Map 'service' from query to serviceId
+          serviceId: query.service 
         },
       }),
       { page, limit },
     );
   }
 
-  @Get(':id')
-  @Public()
-  @ApiParam({
-    name: 'id',
-    type: String,
-    required: true,
-  })
-  @ApiOkResponse({
-    type: Business,
-  })
-  findById(@Param('id') id: string) {
-    return this.businessesService.findById(id);
-  }
+  // @Get(':id')
+  // @Public()
+  // @ApiParam({
+  //   name: 'id',
+  //   type: String,
+  //   required: true,
+  // })
+  // @ApiOkResponse({
+  //   type: Business,
+  // })
+  // findById(@Param('id') id: string) {
+  //   return this.businessesService.findById(id);
+  // }
+
+
+// @Get(':id')
+// @Public()
+// async findById(@Param('id') id: string) {
+//   // إضافة تحقق بسيط
+//   if (!id || id === 'undefined') return null;
+//   return this.businessesService.findById(id);
+// }
+
+
+
+// @Get(':id')
+// @Public()
+// async findById(
+//   @Param('id') id: string,
+//   @Query('relations') relations?: string
+// ) {
+//   if (!id || id === 'undefined') return null;
+//   // Convert comma-separated string into an array
+//   const relationsArray = relations ? relations.split(',') : [];
+//   return this.businessesService.findById(id);
+// }
+
+
+
+@Get(':id')
+@Public()
+async findById(@Param('id') id: string) {
+  if (!id || id === 'undefined') return null;
+  return this.businessesService.findById(id);
+}
 
   @Patch(':id')
   @ApiParam({

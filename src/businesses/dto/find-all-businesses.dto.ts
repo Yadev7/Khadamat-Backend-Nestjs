@@ -1,49 +1,30 @@
+// src/businesses/dto/find-all-businesses.dto.ts
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
-
-// export class FindAllBusinessesDto {
-//   @ApiPropertyOptional()
-//   @Transform(({ value }) => (value ? Number(value) : 1))
-//   @IsNumber()
-//   @IsOptional()
-//   page?: number;
-
-//   @ApiPropertyOptional()
-//   @Transform(({ value }) => (value ? Number(value) : 10))
-//   @IsNumber()
-//   @IsOptional()
-//   limit?: number;
-//   cityId: string | undefined;
-//   zoneId: string | undefined;
-//   service: string | undefined;
-// }
+import { IsOptional, IsString } from 'class-validator';
 
 export class FindAllBusinessesDto {
   @ApiPropertyOptional()
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
   page?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
   limit?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  cityId?: string;
+  service?: string; // Captures ?service=UUID from URL
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  zoneId?: string;
+  cityId?: string;   // Captures ?cityId=UUID from URL
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  service?: string; // هذا ما نرسله من الفرونت إند
+  zoneId?: string;   // Captures ?zoneId=UUID from URL
+  city: string | undefined;
+  zone: string | undefined;
 }

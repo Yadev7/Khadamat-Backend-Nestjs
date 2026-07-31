@@ -27,34 +27,23 @@ import { MailerModule } from './mailer/mailer.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MongooseConfigService } from './database/mongoose-config.service';
 import { DatabaseConfig } from './database/config/database-config.type';
-
 import { CountriesModule } from './countries/countries.module';
-
 import { CitiesModule } from './cities/cities.module';
-
 import { LocalisationsModule } from './localisations/localisations.module';
-
 import { CityAreasModule } from './city-areas/city-areas.module';
-
 import { AddressesModule } from './addresses/addresses.module';
-
 import { ContactsModule } from './contacts/contacts.module';
-
 import { EntreprisesModule } from './entreprises/entreprises.module';
-
 import { MembersModule } from './members/members.module';
-
 import { BusinessesModule } from './businesses/businesses.module';
-
 import { ImagesBusinessesModule } from './images-businesses/images-businesses.module';
-
 import { EvaluationsModule } from './evaluations/evaluations.module';
-
 import { ReportsModule } from './reports/reports.module';
-
 import { CallsModule } from './calls/calls.module';
-
 import { MessagesModule } from './messages/messages.module';
+
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 // <database-block>
 const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
@@ -147,6 +136,12 @@ import { SelectedBusinessesModule } from './selected-businesses/selected-busines
     MailModule,
     MailerModule,
     HomeModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard, // This applies the guard to EVERY route
+    },
   ],
 })
 export class AppModule {}

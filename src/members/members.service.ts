@@ -21,7 +21,7 @@ import { UpdateMemberDto } from './dto/update-member.dto';
 import { MemberRepository } from './infrastructure/persistence/member.repository';
 import { IPaginationOptions } from '../utils/types/pagination-options';
 import { Member } from './domain/member';
-
+import * as bcrypt from 'bcryptjs';
 @Injectable()
 export class MembersService {
   constructor(
@@ -33,84 +33,143 @@ export class MembersService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async create(createMemberDto: CreateMemberDto): Promise<Member> {
-    // <creating-property />
+  // async create(createMemberDto: CreateMemberDto): Promise<Member> {
+  //   // <creating-property />
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+  //   const queryRunner = this.dataSource.createQueryRunner();
+  //   await queryRunner.connect();
+  //   await queryRunner.startTransaction();
 
-    try {
-      let userEntity: UserEntity | null = null;
-      let entrepriseEntity: EntrepriseEntity | null = null;
+  //   try {
+  //     let userEntity: UserEntity | null = null;
+  //     let entrepriseEntity: EntrepriseEntity | null = null;
 
-      // 1. Conditional Logic: Create User Account for INDIVIDUALS
-      if (createMemberDto.typeMember === 'INDIVIDUAL') {
-        const dtoUser = (createMemberDto as any).user;
-        if (!dtoUser?.email) {
-          throw new Error('Email is required for individual member creation.');
-        }
+  //     // 1. Conditional Logic: Create User Account for INDIVIDUALS
+  //     if (createMemberDto.typeMember === 'INDIVIDUAL') {
+  //       const dtoUser = (createMemberDto as any).user;
+  //       if (!dtoUser?.email) {
+  //         throw new Error('Email is required for individual member creation.');
+  //       }
 
-        const userInstance = queryRunner.manager.create(UserEntity, {
-          email: dtoUser.email,
-          password: 'DefaultPassword123!', // Ensure your architecture handles hashing upstream or inside a subscriber
-          role: { id: 2 },
-          status: { id: 1 },
-        });
-        userEntity = await queryRunner.manager.save(UserEntity, userInstance);
-      }
+  //       const userInstance = queryRunner.manager.create(UserEntity, {
+  //         email: dtoUser.email,
+  //         password: 'DefaultPassword123!', // Ensure your architecture handles hashing upstream or inside a subscriber
+  //         role: { id: 2 },
+  //         status: { id: 1 },
+  //       });
+  //       userEntity = await queryRunner.manager.save(UserEntity, userInstance);
+  //     }
 
-      // 2. Conditional Logic: Create Corporate Record for ENTERPRISES
-      else if (createMemberDto.typeMember === 'ENTERPRISE') {
-        if (!createMemberDto.entreprise) {
-          throw new Error('Enterprise details are required for corporate member creation.');
-        }
+  //     // 2. Conditional Logic: Create Corporate Record for ENTERPRISES
+  //     else if (createMemberDto.typeMember === 'ENTERPRISE') {
+  //       if (!createMemberDto.entreprise) {
+  //         throw new Error('Enterprise details are required for corporate member creation.');
+  //       }
 
-        const entrepriseInstance = queryRunner.manager.create(
-          EntrepriseEntity,
-          createMemberDto.entreprise,
-        );
-        entrepriseEntity = await queryRunner.manager.save(EntrepriseEntity, entrepriseInstance);
-      }
+  //       const entrepriseInstance = queryRunner.manager.create(
+  //         EntrepriseEntity,
+  //         createMemberDto.entreprise,
+  //       );
+  //       entrepriseEntity = await queryRunner.manager.save(EntrepriseEntity, entrepriseInstance);
+  //     }
 
-      // 3. Always create the Contact record within the transactional context
-      if (!createMemberDto.contact) {
-        throw new Error('Contact details are mandatory to establish a Member profile.');
-      }
+  //     // 3. Always create the Contact record within the transactional context
+  //     if (!createMemberDto.contact) {
+  //       throw new Error('Contact details are mandatory to establish a Member profile.');
+  //     }
 
-      const contactInstance = queryRunner.manager.create(ContactEntity, createMemberDto.contact);
-      const savedContactEntity = await queryRunner.manager.save(ContactEntity, contactInstance);
+  //     const contactInstance = queryRunner.manager.create(ContactEntity, createMemberDto.contact);
+  //     const savedContactEntity = await queryRunner.manager.save(ContactEntity, contactInstance);
 
-      // 4. Construct and tie everything together inside the Member relational row
-      const memberInstance = queryRunner.manager.create(MemberEntity, {
-        typeMember: createMemberDto.typeMember,
-        user: userEntity,
-        entreprise: entrepriseEntity,
-        contact: savedContactEntity,
-      });
+  //     // 4. Construct and tie everything together inside the Member relational row
+  //     const memberInstance = queryRunner.manager.create(MemberEntity, {
+  //       typeMember: createMemberDto.typeMember,
+  //       user: userEntity,
+  //       entreprise: entrepriseEntity,
+  //       contact: savedContactEntity,
+  //     });
 
-      const savedMemberEntity = await queryRunner.manager.save(MemberEntity, memberInstance);
+  //     const savedMemberEntity = await queryRunner.manager.save(MemberEntity, memberInstance);
 
-      // Atomically write all changes to your PostgreSQL instance
-      await queryRunner.commitTransaction();
+  //     // Atomically write all changes to your PostgreSQL instance
+  //     await queryRunner.commitTransaction();
 
-      // Convert the database entity layer safely back to your Domain Model layer
-      return MemberMapper.toDomain(savedMemberEntity);
+  //     // Convert the database entity layer safely back to your Domain Model layer
+  //     return MemberMapper.toDomain(savedMemberEntity);
 
-    } catch (error) {
-      // Instantly wipe database changes on failure to prevent rogue ghost profiles
-      await queryRunner.rollbackTransaction();
+  //   } catch (error) {
+  //     // Instantly wipe database changes on failure to prevent rogue ghost profiles
+  //     await queryRunner.rollbackTransaction();
 
-      throw new UnprocessableEntityException({
-        status: HttpStatus.UNPROCESSABLE_ENTITY,
-        errors: {
-          database: 'Transaction failed, changes rolled back: ' + (error instanceof Error ? error.message : String(error)),
-        },
-      });
-    } finally {
-      // Always release query allocation connection back to the database pool
-      await queryRunner.release();
+  //     throw new UnprocessableEntityException({
+  //       status: HttpStatus.UNPROCESSABLE_ENTITY,
+  //       errors: {
+  //         database: 'Transaction failed, changes rolled back: ' + (error instanceof Error ? error.message : String(error)),
+  //       },
+  //     });
+  //   } finally {
+  //     // Always release query allocation connection back to the database pool
+  //     await queryRunner.release();
+  //   }
+  // }
+
+  // Inside MembersService.ts
+
+async create(createMemberDto: CreateMemberDto): Promise<Member> {
+  return await this.dataSource.transaction(async (manager) => {
+    let userEntity: UserEntity | null = null;
+    let entrepriseEntity: EntrepriseEntity | null = null;
+
+    // 1. Create User (Delegated to UsersService logic if possible, or handled here with hashing)
+    if (createMemberDto.typeMember === 'INDIVIDUAL') {
+      const dtoUser = (createMemberDto as any).user;
+      if (!dtoUser?.email) throw new Error('Email is required for individuals.');
+
+      // Proper way: Use bcrypt here or inject UsersService method that accepts 'manager'
+      const hashedPassword = await bcrypt.hash('DefaultPassword123!', 10);
+      
+      userEntity = await manager.save(UserEntity, manager.create(UserEntity, {
+        email: dtoUser.email,
+        password: hashedPassword,
+        role: { id: 2 },
+        status: { id: 1 },
+      }));
     }
+
+    // 2. Create Enterprise
+    else if (createMemberDto.typeMember === 'ENTERPRISE') {
+      if (!createMemberDto.entreprise) throw new Error('Enterprise details required.');
+      entrepriseEntity = await manager.save(EntrepriseEntity, manager.create(EntrepriseEntity, createMemberDto.entreprise));
+    }
+
+    // 3. Create Contact
+    if (!createMemberDto.contact) throw new Error('Contact details are mandatory.');
+    const contactEntity = await manager.save(ContactEntity, manager.create(ContactEntity, createMemberDto.contact));
+
+    // 4. Create Member
+    const memberInstance = manager.create(MemberEntity, {
+      typeMember: createMemberDto.typeMember,
+      user: userEntity,
+      entreprise: entrepriseEntity,
+      contact: contactEntity,
+    });
+
+    const savedMember = await manager.save(MemberEntity, memberInstance);
+
+    // Return the domain model
+    return MemberMapper.toDomain(savedMember);
+  });
+}
+
+async getDashboardData() {
+    // Implement your logic to fetch and return dashboard data for the member
+    // This could involve aggregating data from various services or repositories
+    // For example, you might want to fetch recent activities, notifications, etc.
+    // Placeholder implementation:
+    return {
+      message: 'Dashboard data fetched successfully.',
+      // Add more relevant data here
+    };
   }
 
   async update(id: Member['id'], updateMemberDto: UpdateMemberDto) {
