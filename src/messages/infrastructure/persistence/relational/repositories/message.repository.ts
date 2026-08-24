@@ -25,12 +25,18 @@ export class MessageRelationalRepository implements MessageRepository {
 
   async findAllWithPagination({
     paginationOptions,
+    filterOptions,
   }: {
     paginationOptions: IPaginationOptions;
+    filterOptions?: { businessId?: string };
   }): Promise<Message[]> {
     const entities = await this.messageRepository.find({
+      where: filterOptions?.businessId
+        ? { business: { id: filterOptions.businessId } }
+        : {},
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC' },
     });
 
     return entities.map((entity) => MessageMapper.toDomain(entity));

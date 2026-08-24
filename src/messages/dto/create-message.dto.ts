@@ -77,6 +77,14 @@ export class CreateMessageDto {
   })
   @IsOptional()
   @IsString()
+  textEn?: string | null;
+
+  @ApiProperty({
+    required: false,
+    type: () => String,
+  })
+  @IsOptional()
+  @IsString()
   titleAr?: string | null;
 
   @ApiProperty({

@@ -59,6 +59,8 @@ export class MessagesService {
 
       textFr: createMessageDto.textFr,
 
+      textEn: createMessageDto.textEn,
+
       titleAr: createMessageDto.titleAr,
 
       titleFr: createMessageDto.titleFr,
@@ -67,13 +69,18 @@ export class MessagesService {
 
   findAllWithPagination({
     paginationOptions,
+    filterOptions,
   }: {
     paginationOptions: IPaginationOptions;
+    filterOptions?: { businessId?: string };
   }) {
     return this.messageRepository.findAllWithPagination({
       paginationOptions: {
         page: paginationOptions.page,
         limit: paginationOptions.limit,
+      },
+      filterOptions: {
+        businessId: filterOptions?.businessId,
       },
     });
   }
@@ -126,6 +133,8 @@ export class MessagesService {
       textAr: updateMessageDto.textAr,
 
       textFr: updateMessageDto.textFr,
+
+      textEn: updateMessageDto.textEn,
 
       titleAr: updateMessageDto.titleAr,
 

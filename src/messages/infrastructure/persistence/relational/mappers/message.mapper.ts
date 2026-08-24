@@ -22,6 +22,8 @@ export class MessageMapper {
 
     domainEntity.textFr = raw.textFr;
 
+    domainEntity.textEn = raw.textEn;
+
     domainEntity.titleAr = raw.titleAr;
 
     domainEntity.titleFr = raw.titleFr;
@@ -52,6 +54,8 @@ export class MessageMapper {
     persistenceEntity.textAr = domainEntity.textAr;
 
     persistenceEntity.textFr = domainEntity.textFr;
+
+    persistenceEntity.textEn = domainEntity.textEn;
 
     persistenceEntity.titleAr = domainEntity.titleAr;
 

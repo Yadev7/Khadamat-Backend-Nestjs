@@ -10,8 +10,10 @@ export abstract class MessageRepository {
 
   abstract findAllWithPagination({
     paginationOptions,
+    filterOptions,
   }: {
     paginationOptions: IPaginationOptions;
+    filterOptions?: { businessId?: string };
   }): Promise<Message[]>;
 
   abstract findById(id: Message['id']): Promise<NullableType<Message>>;

@@ -20,7 +20,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Message } from './domain/message';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Public } from '../auth/decorators/public.decorator';
 import {
   InfinityPaginationResponse,
   InfinityPaginationResponseDto,
@@ -30,7 +31,7 @@ import { FindAllMessagesDto } from './dto/find-all-messages.dto';
 
 @ApiTags('Messages')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard)
 @Controller({
   path: 'messages',
   version: '1',
@@ -39,6 +40,7 @@ export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 
   @Post()
+  @Public()
   @ApiCreatedResponse({
     type: Message,
   })
@@ -64,6 +66,9 @@ export class MessagesController {
         paginationOptions: {
           page,
           limit,
+        },
+        filterOptions: {
+          businessId: query.businessId,
         },
       }),
       { page, limit },

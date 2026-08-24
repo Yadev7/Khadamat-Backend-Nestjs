@@ -51,6 +51,12 @@ export class MessageEntity extends EntityRelationalHelper {
     nullable: true,
     type: String,
   })
+  textEn?: string | null;
+
+  @Column({
+    nullable: true,
+    type: String,
+  })
   titleAr?: string | null;
 
   @Column({

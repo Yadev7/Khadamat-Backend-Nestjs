@@ -42,6 +42,12 @@ export class Message {
     type: () => String,
     nullable: true,
   })
+  textEn?: string | null;
+
+  @ApiProperty({
+    type: () => String,
+    nullable: true,
+  })
   titleAr?: string | null;
 
   @ApiProperty({
