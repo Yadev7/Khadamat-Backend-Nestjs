@@ -6,19 +6,16 @@ import {
   Post,
   Response,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
-  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
   ApiExcludeEndpoint,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 import { FilesLocalService } from './files.service';
 import { FileResponseDto } from './dto/file-response.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
@@ -39,8 +36,7 @@ export class FilesLocalController {
   constructor(private readonly filesService: FilesLocalService) {}
 
   @ApiCreatedResponse({ type: FileResponseDto })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @Public()
   @Post('upload')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
