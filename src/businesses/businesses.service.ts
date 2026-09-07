@@ -86,7 +86,8 @@ export class BusinessesService {
       if (createBusinessDto.localisation) {
         const { latitude, longitude } = createBusinessDto.localisation;
         if (latitude && longitude) {
-          const localisationRepo = queryRunner.manager.getRepository('localisation');
+          const localisationRepo =
+            queryRunner.manager.getRepository('localisation');
           const newLocEntity = localisationRepo.create({
             latitude: parseFloat(String(latitude)),
             longitude: parseFloat(String(longitude)),
@@ -111,7 +112,7 @@ export class BusinessesService {
           contact,
           service,
           flyer,
-          localisation: savedLocalisation, 
+          localisation: savedLocalisation,
           audioAr: await this.mapFile(createBusinessDto.audioAr),
           audioFr: await this.mapFile(createBusinessDto.audioFr),
           audioEn: await this.mapFile(createBusinessDto.audioEn),
@@ -119,8 +120,8 @@ export class BusinessesService {
           videoFr: await this.mapFile(createBusinessDto.videoFr),
           videoEn: await this.mapFile(createBusinessDto.videoEn),
           manager: owner,
-        } as any, 
-        queryRunner.manager, 
+        } as any,
+        queryRunner.manager,
       );
 
       await queryRunner.commitTransaction();
@@ -249,7 +250,7 @@ export class BusinessesService {
     filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
   }) {
     // طباعة الفلاتر للتأكد من عبورها بسلام من الـ Controller إلى الـ Repository
-    console.log("💼 Service received filterOptions:", filterOptions);
+    console.log('💼 Service received filterOptions:', filterOptions);
 
     return this.businessRepository.findAllWithPagination({
       paginationOptions,
@@ -282,8 +283,6 @@ export class BusinessesService {
   async findById(id: Business['id']): Promise<Business | null> {
     return this.businessRepository.findById(id);
   }
-
-
 
   async remove(id: Business['id']): Promise<void> {
     return this.businessRepository.remove(id);

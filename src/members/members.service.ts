@@ -115,60 +115,83 @@ export class MembersService {
 
   // Inside MembersService.ts
 
-async create(createMemberDto: CreateMemberDto): Promise<Member> {
-  return await this.dataSource.transaction(async (manager) => {
-    let userEntity: UserEntity | null = null;
-    let entrepriseEntity: EntrepriseEntity | null = null;
+  
+  
+  
+  
+  
+  async create(createMemberDto: CreateMemberDto): Promise<Member> {
+    return await this.dataSource.transaction(async (manager) => {
+      let userEntity: UserEntity | null = null;
+      let entrepriseEntity: EntrepriseEntity | null = null;
 
-    // 1. Create User (Delegated to UsersService logic if possible, or handled here with hashing)
-    if (createMemberDto.typeMember === 'INDIVIDUAL') {
-      const dtoUser = (createMemberDto as any).user;
-      if (!dtoUser?.email) throw new Error('Email is required for individuals.');
+      // 1. Create User (Delegated to UsersService logic if possible, or handled here with hashing)
+      if (createMemberDto.typeMember === 'INDIVIDUAL') {
+        const dtoUser = (createMemberDto as any).user;
+        if (!dtoUser?.email)
+          throw new Error('Email is required for individuals.');
 
-      // Proper way: Use bcrypt here or inject UsersService method that accepts 'manager'
-      const hashedPassword = await bcrypt.hash('DefaultPassword123!', 10);
-      
-      userEntity = await manager.save(UserEntity, manager.create(UserEntity, {
-        email: dtoUser.email,
-        password: hashedPassword,
-        role: { id: 2 },
-        status: { id: 1 },
-      }));
-    }
+        // Proper way: Use bcrypt here or inject UsersService method that accepts 'manager'
+        const hashedPassword = await bcrypt.hash('DefaultPassword123!', 10);
 
-    // 2. Create Enterprise
-    else if (createMemberDto.typeMember === 'ENTERPRISE') {
-      if (!createMemberDto.entreprise) throw new Error('Enterprise details required.');
-      entrepriseEntity = await manager.save(EntrepriseEntity, manager.create(EntrepriseEntity, createMemberDto.entreprise));
-    }
+        userEntity = await manager.save(
+          UserEntity,
+          manager.create(UserEntity, {
+            email: dtoUser.email,
+            password: hashedPassword,
+            role: { id: 2 },
+            status: { id: 1 },
+          }),
+        );
+      }
 
-    // 3. Create Contact
-    if (!createMemberDto.contact) throw new Error('Contact details are mandatory.');
-    const contactEntity = await manager.save(ContactEntity, manager.create(ContactEntity, createMemberDto.contact));
+      // 2. Create Enterprise
+      else if (createMemberDto.typeMember === 'ENTERPRISE') {
+        if (!createMemberDto.entreprise)
+          throw new Error('Enterprise details required.');
+        entrepriseEntity = await manager.save(
+          EntrepriseEntity,
+          manager.create(EntrepriseEntity, createMemberDto.entreprise),
+        );
+      }
 
-    // 4. Create Member
-    const memberInstance = manager.create(MemberEntity, {
-      typeMember: createMemberDto.typeMember,
-      user: userEntity,
-      entreprise: entrepriseEntity,
-      contact: contactEntity,
+      // 3. Create Contact
+      if (!createMemberDto.contact)
+        throw new Error('Contact details are mandatory.');
+      const contactEntity = await manager.save(
+        ContactEntity,
+        manager.create(ContactEntity, createMemberDto.contact),
+      );
+
+      // 4. Create Member
+      const memberInstance = manager.create(MemberEntity, {
+        typeMember: createMemberDto.typeMember,
+        user: userEntity,
+        entreprise: entrepriseEntity,
+        contact: contactEntity,
+      });
+
+      const savedMember = await manager.save(MemberEntity, memberInstance);
+
+      // Return the domain model
+      return MemberMapper.toDomain(savedMember);
     });
+  }
 
-    const savedMember = await manager.save(MemberEntity, memberInstance);
+  // async getDashboardData() {
+  //   // Implement your logic to fetch and return dashboard data for the member
+  //   // This could involve aggregating data from various services or repositories
+  //   // For example, you might want to fetch recent activities, notifications, etc.
+  //   // Placeholder implementation:
+  //   return {
+  //     message: 'Dashboard data fetched successfully.',
+  //     // Add more relevant data here
+  //   };
+  // }
 
-    // Return the domain model
-    return MemberMapper.toDomain(savedMember);
-  });
-}
-
-async getDashboardData() {
-    // Implement your logic to fetch and return dashboard data for the member
-    // This could involve aggregating data from various services or repositories
-    // For example, you might want to fetch recent activities, notifications, etc.
-    // Placeholder implementation:
+  getDashboardData() {
     return {
       message: 'Dashboard data fetched successfully.',
-      // Add more relevant data here
     };
   }
 
@@ -220,8 +243,14 @@ async getDashboardData() {
           contact = contactObject;
         } else {
           // Safe transactional contact addition if inline data creation happens during updates
-          const contactInstance = queryRunner.manager.create(ContactEntity, updateMemberDto.contact as any);
-          const savedContactEntity = await queryRunner.manager.save(ContactEntity, contactInstance);
+          const contactInstance = queryRunner.manager.create(
+            ContactEntity,
+            updateMemberDto.contact as any,
+          );
+          const savedContactEntity = await queryRunner.manager.save(
+            ContactEntity,
+            contactInstance,
+          );
           contact = savedContactEntity as unknown as Contact;
         }
       } else if (updateMemberDto.contact === null) {
@@ -239,18 +268,22 @@ async getDashboardData() {
 
       // <updating-property-payload />
 
-      const updateResult = await this.memberRepository.update(id, updatedMemberPayload);
-      
+      const updateResult = await this.memberRepository.update(
+        id,
+        updatedMemberPayload,
+      );
+
       await queryRunner.commitTransaction();
       return updateResult;
-
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
         errors: {
-          database: 'Update transactional context failed: ' + (error instanceof Error ? error.message : String(error)),
+          database:
+            'Update transactional context failed: ' +
+            (error instanceof Error ? error.message : String(error)),
         },
       });
     } finally {

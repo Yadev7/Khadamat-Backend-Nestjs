@@ -15,10 +15,10 @@ export class Message {
   emailContact?: string | null;
 
   @ApiProperty({
-    type: () => Number,
+    type: () => String,
     nullable: true,
   })
-  phoneContact?: number | null;
+  phoneContact?: string | null;
 
   @ApiProperty({
     type: () => String,
@@ -55,6 +55,12 @@ export class Message {
     nullable: true,
   })
   titleFr?: string | null;
+
+  @ApiProperty({
+    type: () => String,
+    nullable: true,
+  })
+  titleEn?: string | null;
 
   @ApiProperty({
     type: String,

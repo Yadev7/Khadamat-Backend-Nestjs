@@ -28,6 +28,8 @@ export class MessageMapper {
 
     domainEntity.titleFr = raw.titleFr;
 
+    domainEntity.titleEn = raw.titleEn;
+
     domainEntity.id = raw.id as string;
     domainEntity.createdAt = raw.createdAt as Date;
     domainEntity.updatedAt = raw.updatedAt as Date;
@@ -60,6 +62,8 @@ export class MessageMapper {
     persistenceEntity.titleAr = domainEntity.titleAr;
 
     persistenceEntity.titleFr = domainEntity.titleFr;
+
+    persistenceEntity.titleEn = domainEntity.titleEn;
 
     if (domainEntity.id) {
       persistenceEntity.id = domainEntity.id;

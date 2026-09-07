@@ -25,9 +25,9 @@ export class MessageEntity extends EntityRelationalHelper {
 
   @Column({
     nullable: true,
-    type: Number,
+    type: String,
   })
-  phoneContact?: number | null;
+  phoneContact?: string | null;
 
   @Column({
     nullable: true,
@@ -64,6 +64,12 @@ export class MessageEntity extends EntityRelationalHelper {
     type: String,
   })
   titleFr?: string | null;
+
+  @Column({
+    nullable: true,
+    type: String,
+  })
+  titleEn?: string | null;
 
   @PrimaryGeneratedColumn('uuid')
   id?: string;

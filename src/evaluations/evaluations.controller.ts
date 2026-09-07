@@ -27,10 +27,9 @@ import {
 } from '../utils/dto/infinity-pagination-response.dto';
 import { infinityPagination } from '../utils/infinity-pagination';
 import { FindAllEvaluationsDto } from './dto/find-all-evaluations.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Evaluations')
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
 @Controller({
   path: 'evaluations',
   version: '1',
@@ -38,14 +37,19 @@ import { FindAllEvaluationsDto } from './dto/find-all-evaluations.dto';
 export class EvaluationsController {
   constructor(private readonly evaluationsService: EvaluationsService) {}
 
+  // 🌟 Public route: Anyone can submit an evaluation/review without a token
+  @Public()
   @Post()
   @ApiCreatedResponse({
     type: Evaluation,
   })
   create(@Body() createEvaluationDto: CreateEvaluationDto) {
+    console.log('RECEIVED PAYLOAD:', createEvaluationDto);
     return this.evaluationsService.create(createEvaluationDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   @ApiOkResponse({
     type: InfinityPaginationResponse(Evaluation),
@@ -70,6 +74,8 @@ export class EvaluationsController {
     );
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   @ApiParam({
     name: 'id',
@@ -83,6 +89,8 @@ export class EvaluationsController {
     return this.evaluationsService.findById(id);
   }
 
+  // @ApiBearerAuth()
+  // @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   @ApiParam({
     name: 'id',
@@ -99,6 +107,8 @@ export class EvaluationsController {
     return this.evaluationsService.update(id, updateEvaluationDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   @ApiParam({
     name: 'id',

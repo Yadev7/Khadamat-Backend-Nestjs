@@ -58,5 +58,5 @@ export class EvaluationEntity extends EntityRelationalHelper {
     onDelete: 'CASCADE', // If the Business is deleted, its reviews are too
   })
   @JoinColumn({ name: 'businessId' })
-  business?: BusinessEntity;
+  business!: BusinessEntity;
 }

@@ -6,20 +6,25 @@ import {
   Injectable,
   HttpStatus,
   UnprocessableEntityException,
+  Logger,
 } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { MessageRepository } from './infrastructure/persistence/message.repository';
 import { IPaginationOptions } from '../utils/types/pagination-options';
 import { Message } from './domain/message';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class MessagesService {
+  private readonly logger = new Logger(MessagesService.name);
+
   constructor(
     private readonly businessService: BusinessesService,
 
     // Dependencies here
     private readonly messageRepository: MessageRepository,
+    private readonly mailService: MailService,
   ) {}
 
   async create(createMessageDto: CreateMessageDto) {
@@ -44,7 +49,7 @@ export class MessagesService {
       business = null;
     }
 
-    return this.messageRepository.create({
+    const saved = await this.messageRepository.create({
       // Do not remove comment below.
       // <creating-property-payload />
       business,
@@ -64,7 +69,52 @@ export class MessagesService {
       titleAr: createMessageDto.titleAr,
 
       titleFr: createMessageDto.titleFr,
+
+      titleEn: createMessageDto.titleEn,
     });
+
+    // If this is a "Become a Tasker" request (no business attached), send email to admin
+    // Detect via title/text presence without business
+    const isBecomeTasker =
+      !createMessageDto.business &&
+      (createMessageDto.titleEn ||
+        createMessageDto.titleFr ||
+        createMessageDto.titleAr);
+
+    if (isBecomeTasker) {
+      const name =
+        createMessageDto.titleEn ||
+        createMessageDto.titleFr ||
+        createMessageDto.titleAr ||
+        'Unknown';
+      const skills =
+        createMessageDto.textEn ||
+        createMessageDto.textFr ||
+        createMessageDto.textAr ||
+        '';
+      const email = createMessageDto.emailContact || 'N/A';
+      const phone = createMessageDto.phoneContact
+        ? String(createMessageDto.phoneContact)
+        : 'N/A';
+
+      try {
+        await this.mailService.sendBecomeTaskerApplication({
+          name,
+          email,
+          phone,
+          skills,
+          audio: createMessageDto.audio || null,
+        });
+        this.logger.log(`Become-tasker email sent for ${name} <${email}>`);
+      } catch (err: any) {
+        // MailerService already swallows DNS/CONNREFUSED; only real errors reach here
+        this.logger.warn(
+          `Become-tasker email not sent for ${name} <${email}>: ${err?.message}`,
+        );
+      }
+    }
+
+    return saved;
   }
 
   findAllWithPagination({
@@ -139,6 +189,8 @@ export class MessagesService {
       titleAr: updateMessageDto.titleAr,
 
       titleFr: updateMessageDto.titleFr,
+
+      titleEn: updateMessageDto.titleEn,
     });
   }
 

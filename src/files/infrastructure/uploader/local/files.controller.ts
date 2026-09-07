@@ -83,8 +83,8 @@ export class FilesLocalController {
 //     throw new NotFoundException('File not found');
 //   }
 
-//   const mimeType = normalizedPath.endsWith('.mp3') ? 'audio/mpeg' : 
-//                    normalizedPath.endsWith('.mp4') ? 'video/mp4' : 
+//   const mimeType = normalizedPath.endsWith('.mp3') ? 'audio/mpeg' :
+//                    normalizedPath.endsWith('.mp4') ? 'video/mp4' :
 //                    'image/jpeg'; // Default to image if not mp3/mp4
 
 //   response.set({
@@ -95,7 +95,6 @@ export class FilesLocalController {
 //   const file = createReadStream(filePath);
 //   return new StreamableFile(file);
 // }
-
 
 // @Get(':path')
 // @ApiExcludeEndpoint()
@@ -121,5 +120,3 @@ export class FilesLocalController {
 
 //   return new StreamableFile(createReadStream(filePath));
 // }
-
-

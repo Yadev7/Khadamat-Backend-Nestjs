@@ -41,4 +41,7 @@ export class Evaluation {
 
   @ApiProperty()
   updatedAt?: Date;
+  business:
+    | import('../../businesses/infrastructure/persistence/relational/entities/business.entity').BusinessEntity
+    | undefined;
 }

@@ -15,9 +15,14 @@ export class BusinessRelationalRepository implements BusinessRepository {
     private readonly repository: Repository<BusinessEntity>,
   ) {}
 
-  async create(data: Business, transactionManager?: EntityManager): Promise<Business> {
+  async create(
+    data: Business,
+    transactionManager?: EntityManager,
+  ): Promise<Business> {
     const persistenceModel = BusinessMapper.toPersistence(data);
-    const repo = transactionManager ? transactionManager.getRepository(BusinessEntity) : this.repository;
+    const repo = transactionManager
+      ? transactionManager.getRepository(BusinessEntity)
+      : this.repository;
     const newEntity = await repo.save(repo.create(persistenceModel));
     return BusinessMapper.toDomain(newEntity);
   }
@@ -28,17 +33,17 @@ export class BusinessRelationalRepository implements BusinessRepository {
       relations: {
         service: true,
         flyer: true,
-        audioAr: true, 
-        audioFr: true, 
-        audioEn: true, 
-        videoAr: true, 
-        videoFr: true, 
-        videoEn: true, 
+        audioAr: true,
+        audioFr: true,
+        audioEn: true,
+        videoAr: true,
+        videoFr: true,
+        videoEn: true,
         contact: { address: { localisation: true, city: true, zone: true } },
         localisation: true,
         owner: true,
         manager: true,
-      }
+      },
     });
 
     if (!entity) return null;
@@ -64,41 +69,36 @@ export class BusinessRelationalRepository implements BusinessRepository {
     return domain;
   }
 
-
-
-
-
   async findAllWithPagination({
-  paginationOptions,
-  filterOptions,
-}: {
-  paginationOptions: IPaginationOptions;
-  filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-}): Promise<Business[]> {
-  const queryBuilder = this.repository
-    .createQueryBuilder('business')
-    .leftJoinAndSelect('business.service', 'service')
-    .leftJoinAndSelect('business.flyer', 'flyer')
-    .leftJoinAndSelect('business.contact', 'contact')
-    .leftJoinAndSelect('contact.address', 'address')
-    .leftJoinAndSelect('address.localisation', 'addressLocalisation')
-    .leftJoinAndSelect('business.localisation', 'localisation');
+    paginationOptions,
+    filterOptions,
+  }: {
+    paginationOptions: IPaginationOptions;
+    filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
+  }): Promise<Business[]> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('business')
+      .leftJoinAndSelect('business.service', 'service')
+      .leftJoinAndSelect('business.flyer', 'flyer')
+      .leftJoinAndSelect('business.contact', 'contact')
+      .leftJoinAndSelect('contact.address', 'address')
+      .leftJoinAndSelect('address.localisation', 'addressLocalisation')
+      .leftJoinAndSelect('business.localisation', 'localisation');
 
-  // ONLY filter by Service for now
-  if (filterOptions?.serviceId) {
-    queryBuilder.andWhere('service.id = :serviceId', {
-      serviceId: filterOptions.serviceId,
-    });
+    // ONLY filter by Service for now
+    if (filterOptions?.serviceId) {
+      queryBuilder.andWhere('service.id = :serviceId', {
+        serviceId: filterOptions.serviceId,
+      });
+    }
+
+    const entities = await queryBuilder
+      .skip((paginationOptions.page - 1) * paginationOptions.limit)
+      .take(paginationOptions.limit)
+      .getMany();
+
+    return entities.map((entity) => BusinessMapper.toDomain(entity));
   }
-
-  const entities = await queryBuilder
-    .skip((paginationOptions.page - 1) * paginationOptions.limit)
-    .take(paginationOptions.limit)
-    .getMany();
-
-  return entities.map((entity) => BusinessMapper.toDomain(entity));
-}
-
 
   // async findAllWithPagination({
   //   paginationOptions,
@@ -129,7 +129,7 @@ export class BusinessRelationalRepository implements BusinessRepository {
   //     queryBuilder.andWhere('(zone.id = :zoneId OR address.zoneId = :zoneId)', {
   //       zoneId: filterOptions.zoneId,
   //     });
-  //   } 
+  //   }
   //   // 3. Filter by City (if zone is not selected, but city is)
   //   else if (filterOptions?.cityId) {
   //     queryBuilder.andWhere('(city.id = :cityId OR address.cityId = :cityId)', {
@@ -152,8 +152,6 @@ export class BusinessRelationalRepository implements BusinessRepository {
   //     return domain;
   //   });
   // }
-
-
 
   // async findAllWithPagination({
   //   paginationOptions,
@@ -185,7 +183,7 @@ export class BusinessRelationalRepository implements BusinessRepository {
   //     queryBuilder.andWhere('(zone.id = :zoneId OR address.zoneId = :zoneId)', {
   //       zoneId: filterOptions.zoneId,
   //     });
-  //   } 
+  //   }
   //   // 3. Filter by City (checking via contact.address.city or city relation)
   //   else if (filterOptions?.cityId) {
   //     queryBuilder.andWhere('(city.id = :cityId OR address.cityId = :cityId)', {
@@ -209,61 +207,60 @@ export class BusinessRelationalRepository implements BusinessRepository {
   //   });
   // }
 
+  //   async findAllWithPagination({
+  //   paginationOptions,
+  //   filterOptions,
+  // }: {
+  //   paginationOptions: IPaginationOptions;
+  //   filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
+  // }): Promise<Business[]> {
+  //   const queryBuilder = this.repository
+  //     .createQueryBuilder('business')
+  //     .leftJoinAndSelect('business.service', 'service')
+  //     .leftJoinAndSelect('business.flyer', 'flyer')
+  //     .leftJoinAndSelect('business.contact', 'contact')
+  //     .leftJoinAndSelect('contact.address', 'address')
+  //     .leftJoinAndSelect('address.localisation', 'addressLocalisation')
+  //     .leftJoinAndSelect('business.localisation', 'localisation');
 
-//   async findAllWithPagination({
-//   paginationOptions,
-//   filterOptions,
-// }: {
-//   paginationOptions: IPaginationOptions;
-//   filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-// }): Promise<Business[]> {
-//   const queryBuilder = this.repository
-//     .createQueryBuilder('business')
-//     .leftJoinAndSelect('business.service', 'service')
-//     .leftJoinAndSelect('business.flyer', 'flyer')
-//     .leftJoinAndSelect('business.contact', 'contact')
-//     .leftJoinAndSelect('contact.address', 'address')
-//     .leftJoinAndSelect('address.localisation', 'addressLocalisation')
-//     .leftJoinAndSelect('business.localisation', 'localisation');
+  //   // 1. Filter by Service (Mandatory / Core filter)
+  //   if (filterOptions?.serviceId) {
+  //     queryBuilder.andWhere('service.id = :serviceId', {
+  //       serviceId: filterOptions.serviceId,
+  //     });
+  //   }
 
-//   // 1. Filter by Service (Mandatory / Core filter)
-//   if (filterOptions?.serviceId) {
-//     queryBuilder.andWhere('service.id = :serviceId', {
-//       serviceId: filterOptions.serviceId,
-//     });
-//   }
+  //   // 2. Filter by Zone (if selected, find businesses whose address/localisation matches the zone or is near it)
+  //   if (filterOptions?.zoneId) {
+  //     // Assuming your Zone entity is linked or you can fetch zone bounds,
+  //     // or if address has a zone relation:
+  //     queryBuilder.andWhere('address.zone.id = :zoneId', {
+  //       zoneId: filterOptions.zoneId,
+  //     });
+  //   }
+  //   // 3. Filter by City (if zone is not selected, but city is)
+  //   else if (filterOptions?.cityId) {
+  //     queryBuilder.andWhere('address.city.id = :cityId', {
+  //       cityId: filterOptions.cityId,
+  //     });
+  //   }
 
-//   // 2. Filter by Zone (if selected, find businesses whose address/localisation matches the zone or is near it)
-//   if (filterOptions?.zoneId) {
-//     // Assuming your Zone entity is linked or you can fetch zone bounds, 
-//     // or if address has a zone relation:
-//     queryBuilder.andWhere('address.zone.id = :zoneId', {
-//       zoneId: filterOptions.zoneId,
-//     });
-//   } 
-//   // 3. Filter by City (if zone is not selected, but city is)
-//   else if (filterOptions?.cityId) {
-//     queryBuilder.andWhere('address.city.id = :cityId', {
-//       cityId: filterOptions.cityId,
-//     });
-//   }
+  //   // Pagination execution
+  //   const entities = await queryBuilder
+  //     .skip((paginationOptions.page - 1) * paginationOptions.limit)
+  //     .take(paginationOptions.limit)
+  //     .getMany();
 
-//   // Pagination execution
-//   const entities = await queryBuilder
-//     .skip((paginationOptions.page - 1) * paginationOptions.limit)
-//     .take(paginationOptions.limit)
-//     .getMany();
-
-//   return entities.map((entity) => {
-//     const domain = BusinessMapper.toDomain(entity);
-//     // تأمين تمرير البيانات للـ Frontend
-//     (domain as any).contact = entity.contact;
-//     (domain as any).localisation = entity.localisation;
-//     (domain as any).service = entity.service;
-//     (domain as any).flyer = entity.flyer;
-//     return domain;
-//   });
-// }
+  //   return entities.map((entity) => {
+  //     const domain = BusinessMapper.toDomain(entity);
+  //     // تأمين تمرير البيانات للـ Frontend
+  //     (domain as any).contact = entity.contact;
+  //     (domain as any).localisation = entity.localisation;
+  //     (domain as any).service = entity.service;
+  //     (domain as any).flyer = entity.flyer;
+  //     return domain;
+  //   });
+  // }
 
   // async findAllWithPagination({
   //   paginationOptions,
@@ -309,8 +306,14 @@ export class BusinessRelationalRepository implements BusinessRepository {
   //   });
   // }
 
-  async update(id: Business['id'], payload: DeepPartial<Business>, transactionManager?: EntityManager): Promise<Business | null> {
-    const repo = transactionManager ? transactionManager.getRepository(BusinessEntity) : this.repository;
+  async update(
+    id: Business['id'],
+    payload: DeepPartial<Business>,
+    transactionManager?: EntityManager,
+  ): Promise<Business | null> {
+    const repo = transactionManager
+      ? transactionManager.getRepository(BusinessEntity)
+      : this.repository;
     const entity = await repo.findOne({ where: { id: id as string } });
 
     if (!entity) return null;
@@ -327,7 +330,9 @@ export class BusinessRelationalRepository implements BusinessRepository {
   }
 
   async findByIds(ids: Business['id'][]): Promise<Business[]> {
-    const entities = await this.repository.find({ where: { id: In(ids as string[]) } });
+    const entities = await this.repository.find({
+      where: { id: In(ids as string[]) },
+    });
     return entities.map((entity) => BusinessMapper.toDomain(entity));
   }
 }

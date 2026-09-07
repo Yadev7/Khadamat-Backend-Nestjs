@@ -5,6 +5,8 @@ import {
   IsOptional,
   IsNumber,
   IsBoolean,
+  IsNotEmpty,
+  IsNumberString,
 } from 'class-validator';
 
 import {
@@ -52,6 +54,14 @@ export class CreateEvaluationDto {
   @IsOptional()
   @IsString()
   EvalCode?: string | null;
+
+  @ApiProperty({ required: true, type: () => String })
+  //  @IsString({ message: 'businessId must be a string' })
+  // @IsNotEmpty({ message: 'businessId should not be empty' })
+  // businessId!: string;
+  @IsNumberString({}, { message: 'businessId must be a valid number string' })
+  @IsNotEmpty({ message: 'businessId should not be empty' })
+  businessId: string;
 
   // Don't forget to use the class-validator decorators in the DTO properties.
 }

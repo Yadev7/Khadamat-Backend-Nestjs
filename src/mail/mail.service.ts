@@ -166,4 +166,57 @@ export class MailService {
       },
     });
   }
+
+  async sendBecomeTaskerApplication(data: {
+    name: string;
+    email: string;
+    phone: string;
+    skills: string;
+    audio?: string | null;
+  }): Promise<void> {
+    const appName =
+      this.configService.get('app.name', { infer: true }) ?? 'Khadamat';
+    const recipient = 'abdelouafi.yassine@gmail.com';
+    const subject = `New Tasker Application - ${data.name}`;
+
+    // Build backend file URL for audio if present
+    let audioUrl: string | null = null;
+    if (data.audio) {
+      const backend = this.configService.get('app.backendDomain', {
+        infer: true,
+      }) as string | undefined;
+      const base = (backend || 'http://127.0.0.1:3001').replace(/\/$/, '');
+      // data.audio is like "/api/v1/files/xxx.webm" or "/api/v1/files/xxx" -> make absolute
+      const clean = data.audio.startsWith('http')
+        ? data.audio
+        : `${base}${data.audio.startsWith('/') ? '' : '/'}${data.audio}`;
+      audioUrl = clean;
+    }
+
+    await this.mailerService.sendMail({
+      to: recipient,
+      subject,
+      text: `New tasker application from ${data.name} (${data.email}, ${data.phone})\nSkills: ${data.skills}${data.audio ? `\nAudio: ${data.audio}` : ''}`,
+      templatePath: path.join(
+        this.configService.getOrThrow('app.workingDirectory', {
+          infer: true,
+        }),
+        'src',
+        'mail',
+        'mail-templates',
+        'become-tasker.hbs',
+      ),
+      context: {
+        title: subject,
+        app_name: appName,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        skills: data.skills,
+        hasAudio: !!data.audio,
+        audio: data.audio || '',
+        audioUrl: audioUrl || '',
+      },
+    });
+  }
 }

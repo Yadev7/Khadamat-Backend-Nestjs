@@ -5,7 +5,6 @@ import {
 
   IsString,
   IsOptional,
-  IsNumber,
   ValidateNested,
   IsNotEmptyObject,
 } from 'class-validator';
@@ -41,11 +40,11 @@ export class CreateMessageDto {
 
   @ApiProperty({
     required: false,
-    type: () => Number,
+    type: () => String,
   })
   @IsOptional()
-  @IsNumber()
-  phoneContact?: number | null;
+  @IsString()
+  phoneContact?: string | null;
 
   @ApiProperty({
     required: false,
@@ -94,6 +93,14 @@ export class CreateMessageDto {
   @IsOptional()
   @IsString()
   titleFr?: string | null;
+
+  @ApiProperty({
+    required: false,
+    type: () => String,
+  })
+  @IsOptional()
+  @IsString()
+  titleEn?: string | null;
 
   // Don't forget to use the class-validator decorators in the DTO properties.
 }

@@ -6,10 +6,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Localisation } from 'src/localisations/domain/localisation';
 
 export class Business {
-
   @ApiProperty({ type: () => Localisation, nullable: true })
   localisation?: Localisation | null;
-  
+
   @ApiProperty({ type: () => Contact, nullable: true })
   contact?: Contact | null;
 

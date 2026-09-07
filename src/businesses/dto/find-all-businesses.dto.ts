@@ -19,12 +19,12 @@ export class FindAllBusinessesDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  cityId?: string;   // Captures ?cityId=UUID from URL
+  cityId?: string; // Captures ?cityId=UUID from URL
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  zoneId?: string;   // Captures ?zoneId=UUID from URL
+  zoneId?: string; // Captures ?zoneId=UUID from URL
   city: string | undefined;
   zone: string | undefined;
 }

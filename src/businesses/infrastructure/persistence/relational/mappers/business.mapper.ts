@@ -11,13 +11,11 @@ export class BusinessMapper {
   static toDomain(raw: BusinessEntity): Business {
     const domainEntity = new Business();
 
-    
-
     // Core Relationships
     if (raw.localisation) {
       domainEntity.localisation = LocalisationMapper.toDomain(raw.localisation);
     }
-    
+
     if (raw.contact) {
       domainEntity.contact = ContactMapper.toDomain(raw.contact);
     }

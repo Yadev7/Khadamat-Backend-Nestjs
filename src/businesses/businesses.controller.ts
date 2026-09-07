@@ -44,8 +44,6 @@ export class BusinessesController {
     return this.businessesService.create(createBusinessDto);
   }
 
-
-
   // @Get()
   // @Public()
   // async findAll(
@@ -83,7 +81,7 @@ export class BusinessesController {
         filterOptions: {
           cityId: query.cityId,
           zoneId: query.zoneId,
-          serviceId: query.service 
+          serviceId: query.service,
         },
       }),
       { page, limit },
@@ -104,37 +102,32 @@ export class BusinessesController {
   //   return this.businessesService.findById(id);
   // }
 
+  // @Get(':id')
+  // @Public()
+  // async findById(@Param('id') id: string) {
+  //   // إضافة تحقق بسيط
+  //   if (!id || id === 'undefined') return null;
+  //   return this.businessesService.findById(id);
+  // }
 
-// @Get(':id')
-// @Public()
-// async findById(@Param('id') id: string) {
-//   // إضافة تحقق بسيط
-//   if (!id || id === 'undefined') return null;
-//   return this.businessesService.findById(id);
-// }
+  // @Get(':id')
+  // @Public()
+  // async findById(
+  //   @Param('id') id: string,
+  //   @Query('relations') relations?: string
+  // ) {
+  //   if (!id || id === 'undefined') return null;
+  //   // Convert comma-separated string into an array
+  //   const relationsArray = relations ? relations.split(',') : [];
+  //   return this.businessesService.findById(id);
+  // }
 
-
-
-// @Get(':id')
-// @Public()
-// async findById(
-//   @Param('id') id: string,
-//   @Query('relations') relations?: string
-// ) {
-//   if (!id || id === 'undefined') return null;
-//   // Convert comma-separated string into an array
-//   const relationsArray = relations ? relations.split(',') : [];
-//   return this.businessesService.findById(id);
-// }
-
-
-
-@Get(':id')
-@Public()
-async findById(@Param('id') id: string) {
-  if (!id || id === 'undefined') return null;
-  return this.businessesService.findById(id);
-}
+  @Get(':id')
+  @Public()
+  async findById(@Param('id') id: string) {
+    if (!id || id === 'undefined') return null;
+    return this.businessesService.findById(id);
+  }
 
   @Patch(':id')
   @ApiParam({

@@ -55,17 +55,29 @@ export class BusinessEntity extends EntityRelationalHelper {
   flyer?: FileEntity | null;
 
   // Added onDelete: 'CASCADE' to clear business records if the owner account is deleted
-  @ManyToOne(() => MemberEntity, { eager: false, nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => MemberEntity, {
+    eager: false,
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @IsNotEmpty()
   @JoinColumn({ name: 'ownerId' })
   owner?: MemberEntity;
 
   // Added onDelete: 'CASCADE' to handle records where this member acts as manager
-  @ManyToOne(() => MemberEntity, { eager: false, nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => MemberEntity, {
+    eager: false,
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'managerId' })
   manager?: MemberEntity;
 
-  @OneToOne(() => LocalisationEntity, { eager: false, nullable: true, cascade: true })
+  @OneToOne(() => LocalisationEntity, {
+    eager: false,
+    nullable: true,
+    cascade: true,
+  })
   @JoinColumn({ name: 'localisationId' })
   localisation?: LocalisationEntity | null;
 

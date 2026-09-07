@@ -22,7 +22,8 @@ async function bootstrap() {
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService<AllConfigType>);
 
-  const apiPrefix = configService.getOrThrow('app.apiPrefix', { infer: true }) || 'api';
+  const apiPrefix =
+    configService.getOrThrow('app.apiPrefix', { infer: true }) || 'api';
   const port = configService.getOrThrow('app.port', { infer: true }) || 3001;
 
   // 1. Global Prefix
@@ -42,12 +43,17 @@ async function bootstrap() {
   });
 
   // 4. CORS Setup (Ensures Cookie authentication & Next.js origin work smoothly)
-  const frontendDomain = configService.get('app.frontendDomain', { infer: true });
+  const frontendDomain = configService.get('app.frontendDomain', {
+    infer: true,
+  });
   const allowedOrigins = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     frontendDomain,
-  ].filter((origin): origin is string => typeof origin === 'string' && origin.length > 0);
+  ].filter(
+    (origin): origin is string =>
+      typeof origin === 'string' && origin.length > 0,
+  );
 
   app.enableCors({
     origin: allowedOrigins,

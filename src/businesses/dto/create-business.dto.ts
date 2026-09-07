@@ -13,13 +13,9 @@ import {
   IsNumber,
 } from 'class-validator';
 
-import {
-  ApiProperty,
-} from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
-import {
-  Type,
-} from 'class-transformer';
+import { Type } from 'class-transformer';
 import { MemberDto } from 'src/members/dto/member.dto';
 import { CreateLocalisationDto } from 'src/localisations/dto/create-localisation.dto';
 

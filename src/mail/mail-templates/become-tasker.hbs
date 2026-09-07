@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{title}}</title>
+</head>
+<body style="margin:0;font-family:arial;line-height:1.6">
+    <table style="border:0;width:100%;max-width:600px;margin:0 auto;border-collapse:collapse">
+        <tr style="background:#2563eb">
+            <td style="padding:24px;color:#ffffff;text-align:center;font-size:22px;font-weight:700">
+                {{app_name}} - New Tasker Application
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:24px;color:#374151;font-size:15px">
+                <p style="margin:0 0 16px 0">You have received a new <strong>Become a Tasker</strong> application:</p>
+                <table style="width:100%;border-collapse:collapse;margin:16px 0">
+                    <tr>
+                        <td style="padding:10px 12px;background:#f3f4f6;font-weight:700;width:140px;border:1px solid #e5e7eb">Full Name</td>
+                        <td style="padding:10px 12px;border:1px solid #e5e7eb">{{name}}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 12px;background:#f3f4f6;font-weight:700;border:1px solid #e5e7eb">Email</td>
+                        <td style="padding:10px 12px;border:1px solid #e5e7eb"><a href="mailto:{{email}}">{{email}}</a></td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 12px;background:#f3f4f6;font-weight:700;border:1px solid #e5e7eb">Phone</td>
+                        <td style="padding:10px 12px;border:1px solid #e5e7eb"><a href="tel:{{phone}}">{{phone}}</a></td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 12px;background:#f3f4f6;font-weight:700;border:1px solid #e5e7eb;vertical-align:top">Skills</td>
+                        <td style="padding:10px 12px;border:1px solid #e5e7eb;white-space:pre-wrap">{{skills}}</td>
+                    </tr>
+                    {{#if hasAudio}}
+                    <tr>
+                        <td style="padding:10px 12px;background:#f3f4f6;font-weight:700;border:1px solid #e5e7eb">Voice</td>
+                        <td style="padding:10px 12px;border:1px solid #e5e7eb">
+                            {{#if audioUrl}}<a href="{{audioUrl}}" style="color:#2563eb">Listen / Download audio</a><br><span style="color:#6b7280;font-size:12px">{{audio}}</span>{{else}}{{audio}}{{/if}}
+                        </td>
+                    </tr>
+                    {{/if}}
+                </table>
+                <p style="margin:16px 0 0 0;color:#6b7280;font-size:13px">This message was also saved in the <code>message</code> table (audio column).</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:16px;text-align:center;color:#9ca3af;font-size:12px;border-top:1px solid #e5e7eb">
+                {{app_name}} &copy; 2026
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

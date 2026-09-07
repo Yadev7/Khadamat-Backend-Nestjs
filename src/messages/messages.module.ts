@@ -6,10 +6,12 @@ import {
 import { MessagesService } from './messages.service';
 import { MessagesController } from './messages.controller';
 import { RelationalMessagePersistenceModule } from './infrastructure/persistence/relational/relational-persistence.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
     BusinessesModule,
+    MailModule,
 
     // do not remove this comment
     RelationalMessagePersistenceModule,

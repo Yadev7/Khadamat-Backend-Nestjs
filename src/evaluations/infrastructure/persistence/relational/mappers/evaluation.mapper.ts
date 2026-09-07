@@ -19,6 +19,8 @@ export class EvaluationMapper {
     domainEntity.createdAt = raw.createdAt as Date;
     domainEntity.updatedAt = raw.updatedAt as Date;
 
+    domainEntity.business = raw.business; // This will be set when saving the entity to the database
+
     return domainEntity;
   }
 
@@ -34,9 +36,18 @@ export class EvaluationMapper {
 
     persistenceEntity.evalCode = domainEntity.EvalCode;
 
+    persistenceEntity.id = domainEntity.id;
+
     if (domainEntity.id) {
       persistenceEntity.id = domainEntity.id;
     }
+
+    if (domainEntity.business) {
+      persistenceEntity.business = domainEntity.business;
+      // Or if your persistence entity uses a direct scalar column:
+      // persistenceEntity.businessId = domainEntity.business?.id;
+    }
+
     persistenceEntity.createdAt = domainEntity.createdAt;
     persistenceEntity.updatedAt = domainEntity.updatedAt;
 

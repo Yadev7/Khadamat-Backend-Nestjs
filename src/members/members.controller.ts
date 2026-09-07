@@ -40,13 +40,12 @@ import { RolesGuard } from 'src/roles/roles.guard';
 export class MembersController {
   constructor(private readonly membersService: MembersService) {}
 
-
   @Get('dashboard')
   @Roles(3, 4) // Only Member_Admin and Member_Manager
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   getMemberDashboard() {
     return this.membersService.getDashboardData();
-}
+  }
 
   @Post()
   @ApiCreatedResponse({
