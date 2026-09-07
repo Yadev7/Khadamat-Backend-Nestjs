@@ -3,6 +3,5 @@
 
 import { PartialType } from '@nestjs/swagger';
 import { CreateCityDto } from './create-city.dto';
-import { DeepPartial } from 'typeorm';
 
 export class UpdateCityDto extends PartialType(CreateCityDto) {}

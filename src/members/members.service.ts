@@ -115,11 +115,6 @@ export class MembersService {
 
   // Inside MembersService.ts
 
-  
-  
-  
-  
-  
   async create(createMemberDto: CreateMemberDto): Promise<Member> {
     return await this.dataSource.transaction(async (manager) => {
       let userEntity: UserEntity | null = null;

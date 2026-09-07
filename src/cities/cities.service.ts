@@ -12,8 +12,6 @@ import { UpdateCityDto } from './dto/update-city.dto';
 import { CityRepository } from './infrastructure/persistence/city.repository';
 import { IPaginationOptions } from '../utils/types/pagination-options';
 import { City } from './domain/city';
-import { CityMapper } from './infrastructure/persistence/relational/mappers/city.mapper';
-import { NullableType } from 'src/utils/types/nullable.type';
 import { LocalisationsService } from 'src/localisations/localisations.service';
 
 @Injectable()

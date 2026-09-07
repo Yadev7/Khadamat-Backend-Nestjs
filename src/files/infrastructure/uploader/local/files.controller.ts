@@ -20,13 +20,6 @@ import { FilesLocalService } from './files.service';
 import { FileResponseDto } from './dto/file-response.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
 
-import { StreamableFile } from '@nestjs/common';
-import { createReadStream } from 'fs';
-import { join, basename } from 'path';
-
-import { NotFoundException } from '@nestjs/common';
-import { existsSync } from 'fs';
-
 @ApiTags('Files')
 @Controller({
   path: 'files',

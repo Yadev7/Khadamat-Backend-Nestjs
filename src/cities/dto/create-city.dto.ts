@@ -7,7 +7,6 @@ import {
   IsOptional,
   ValidateNested,
   IsNotEmptyObject,
-  IsNumber,
 } from 'class-validator';
 
 import {
