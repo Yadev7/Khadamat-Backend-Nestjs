@@ -119,6 +119,76 @@ export class MailService {
     });
   }
 
+  async sendContactMessage(data: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }): Promise<void> {
+    const appName =
+      this.configService.get('app.name', { infer: true }) ?? 'Khadamat';
+    const recipient = 'abdelouafi.yassine@gmail.com';
+    const emailSubject = `[Contact Form] ${data.subject}`;
+
+    await this.mailerService.sendMail({
+      to: recipient,
+      subject: emailSubject,
+      text: `Message from ${data.name} (${data.email})\nSubject: ${data.subject}\n\n${data.message}`,
+      templatePath: path.join(
+        this.configService.getOrThrow('app.workingDirectory', {
+          infer: true,
+        }),
+        'src',
+        'mail',
+        'mail-templates',
+        'contact.hbs',
+      ),
+      context: {
+        title: emailSubject,
+        app_name: appName,
+        name: data.name,
+        email: data.email,
+        subject: data.subject,
+        message: data.message,
+      },
+    });
+  }
+
+  async sendWorkerReviewNotification(data: {
+    businessId: string;
+    stars: number;
+    textFr: string;
+    textAr: string;
+  }): Promise<void> {
+    const appName =
+      this.configService.get('app.name', { infer: true }) ?? 'Khadamat';
+    const recipient = 'abdelouafi.yassine@gmail.com';
+    const emailSubject = `[New Review] ${data.stars} Stars for Business #${data.businessId}`;
+
+    await this.mailerService.sendMail({
+      to: recipient,
+      subject: emailSubject,
+      text: `New review received: ${data.stars} stars for business ${data.businessId}\nFR: ${data.textFr}\nAR: ${data.textAr}`,
+      templatePath: path.join(
+        this.configService.getOrThrow('app.workingDirectory', {
+          infer: true,
+        }),
+        'src',
+        'mail',
+        'mail-templates',
+        'worker-review.hbs',
+      ),
+      context: {
+        title: emailSubject,
+        app_name: appName,
+        businessId: data.businessId,
+        stars: data.stars,
+        textFr: data.textFr,
+        textAr: data.textAr,
+      },
+    });
+  }
+
   async confirmNewEmail(mailData: MailData<{ hash: string }>): Promise<void> {
     const i18n = I18nContext.current();
     let emailConfirmTitle: MaybeType<string>;
