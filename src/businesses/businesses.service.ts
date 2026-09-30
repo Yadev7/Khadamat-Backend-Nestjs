@@ -29,10 +29,8 @@ import { AddressesService } from 'src/addresses/addresses.service';
 @Injectable()
 export class BusinessesService {
   constructor(
-  
-  private readonly addressService: AddressesService,
+    private readonly addressService: AddressesService,
 
-  
     private readonly contactService: ContactsService,
     private readonly serviceService: ServicesService,
     @Inject(forwardRef(() => MembersService))
