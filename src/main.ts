@@ -27,9 +27,11 @@ async function bootstrap() {
   const port = configService.getOrThrow('app.port', { infer: true }) || 3001;
 
   // 1. Global Prefix
-  app.setGlobalPrefix(apiPrefix, {
-    exclude: ['/'],
-  });
+  // app.setGlobalPrefix(apiPrefix, {
+  //   exclude: ['/'],
+  // });
+
+  app.setGlobalPrefix('api');
 
   // 2. URI Versioning (/api/v1/...)
   app.enableVersioning({
