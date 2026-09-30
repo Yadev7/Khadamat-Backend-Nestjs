@@ -1,3 +1,5 @@
+import { AddressEntity } from '../../../../../addresses/infrastructure/persistence/relational/entities/address.entity';
+
 import { ContactEntity } from '../../../../../contacts/infrastructure/persistence/relational/entities/contact.entity';
 import { ServiceEntity } from '../../../../../services/infrastructure/persistence/relational/entities/service.entity';
 import {
@@ -24,6 +26,10 @@ import { LocalisationEntity } from 'src/localisations/infrastructure/persistence
   name: 'business',
 })
 export class BusinessEntity extends EntityRelationalHelper {
+  @OneToOne(() => AddressEntity, { eager: true, nullable: true })
+  @JoinColumn()
+  Address?: AddressEntity | null;
+
   // src/businesses/infrastructure/persistence/relational/entities/business.entity.ts
 
   @OneToOne(() => FileEntity, { nullable: true })

@@ -1,3 +1,4 @@
+import { Address } from '../../addresses/domain/address';
 import { Contact } from '../../contacts/domain/contact';
 import { Service } from '../../services/domain/service';
 import { Member } from '../../members/domain/member';
@@ -6,6 +7,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Localisation } from 'src/localisations/domain/localisation';
 
 export class Business {
+  @ApiProperty({
+    type: () => Address,
+    nullable: true,
+  })
+  Address?: Address | null;
+
   @ApiProperty({ type: () => Localisation, nullable: true })
   localisation?: Localisation | null;
 

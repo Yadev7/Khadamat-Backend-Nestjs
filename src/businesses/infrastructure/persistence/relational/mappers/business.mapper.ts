@@ -1,4 +1,6 @@
 import { Business } from '../../../../domain/business';
+import { AddressMapper } from '../../../../../addresses/infrastructure/persistence/relational/mappers/address.mapper';
+
 import { ContactMapper } from '../../../../../contacts/infrastructure/persistence/relational/mappers/contact.mapper';
 import { ServiceMapper } from '../../../../../services/infrastructure/persistence/relational/mappers/service.mapper';
 import { MemberMapper } from '../../../../../members/infrastructure/persistence/relational/mappers/member.mapper';
@@ -10,6 +12,11 @@ import { LocalisationMapper } from 'src/localisations/infrastructure/persistence
 export class BusinessMapper {
   static toDomain(raw: BusinessEntity): Business {
     const domainEntity = new Business();
+    if (raw.Address) {
+      domainEntity.Address = AddressMapper.toDomain(raw.Address);
+    } else if (raw.Address === null) {
+      domainEntity.Address = null;
+    }
 
     // Core Relationships
     if (raw.localisation) {
@@ -63,6 +70,13 @@ export class BusinessMapper {
 
   static toPersistence(domainEntity: Business): BusinessEntity {
     const persistenceEntity = new BusinessEntity();
+    if (domainEntity.Address) {
+      persistenceEntity.Address = AddressMapper.toPersistence(
+        domainEntity.Address,
+      );
+    } else if (domainEntity.Address === null) {
+      persistenceEntity.Address = null;
+    }
 
     // Relationships to Persistence (Core)
     if (domainEntity.localisation) {

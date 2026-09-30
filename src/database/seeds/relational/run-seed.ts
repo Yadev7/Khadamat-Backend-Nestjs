@@ -4,6 +4,8 @@ import { SeedModule } from './seed.module';
 import { StatusSeedService } from './status/status-seed.service';
 import { UserSeedService } from './user/user-seed.service';
 import { GeoSeedService } from './geo/geo-seed.service';
+import { CitySeedService } from './city/city-seed.service';
+import { ServiceSeedService } from './services/services-seed.service';
 
 const runSeed = async () => {
   const app = await NestFactory.create(SeedModule);
@@ -13,6 +15,8 @@ const runSeed = async () => {
   await app.get(StatusSeedService).run();
   await app.get(UserSeedService).run();
   await app.get(GeoSeedService).run();
+  await app.get(CitySeedService).run();
+  await app.get(ServiceSeedService).run();
 
   await app.close();
 };

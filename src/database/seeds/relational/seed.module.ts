@@ -10,6 +10,8 @@ import { UserSeedModule } from './user/user-seed.module';
 import { GeoSeedModule } from './geo/geo-seed.module';
 import databaseConfig from '../../config/database.config';
 import appConfig from '../../../config/app.config';
+import { CitySeedModule } from './city/city-seed.module';
+import { ServicesSeedModule } from './services/service-seed.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import appConfig from '../../../config/app.config';
     StatusSeedModule,
     UserSeedModule,
     GeoSeedModule,
+    CitySeedModule,
+    ServicesSeedModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, appConfig],

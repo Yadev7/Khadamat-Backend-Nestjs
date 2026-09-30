@@ -1,3 +1,5 @@
+  import { AddressDto } from '../../addresses/dto/address.dto';
+
 import { ContactDto } from '../../contacts/dto/contact.dto';
 
 import { ServiceDto } from '../../services/dto/service.dto';
@@ -10,15 +12,33 @@ import {
   ValidateNested,
   IsNotEmptyObject,
   IsNotEmpty,
+
+
+
+
 } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
-
 import { Type } from 'class-transformer';
 import { MemberDto } from 'src/members/dto/member.dto';
 import { CreateLocalisationDto } from 'src/localisations/dto/create-localisation.dto';
 
 export class CreateBusinessDto {
+  @ApiProperty({
+    required: false,
+    type: () => 
+                        AddressDto,
+                })
+
+      @IsOptional()
+        @ValidateNested()
+    @Type(() => AddressDto)
+          @IsNotEmptyObject()
+      
+  Address?: AddressDto  | null;
+
+
+
   @ApiProperty({
     required: false,
     type: () => ContactDto,

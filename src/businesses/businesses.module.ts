@@ -1,3 +1,4 @@
+import { AddressesModule } from '../addresses/addresses.module';
 // src/businesses/businesses.module.ts
 
 import { Module, forwardRef } from '@nestjs/common';
@@ -11,6 +12,8 @@ import { RelationalBusinessPersistenceModule } from './infrastructure/persistenc
 
 @Module({
   imports: [
+    AddressesModule,
+
     ContactsModule,
     ServicesModule,
     FilesModule, // 2. Add FilesModule here

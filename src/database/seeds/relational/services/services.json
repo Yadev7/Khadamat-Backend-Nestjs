@@ -1,0 +1,122 @@
+[
+  {
+    "nameServEn": "Babysitting & Childcare",
+    "nameServFr": "Garde d'Enfants & Baby-sitting",
+    "nameServAr": "مجالسة ورعاية الأطفال",
+    "descrEn": "Reliable in-home childcare, infant supervision, homework support, and educational engagement.",
+    "descrFr": "Garde d'enfants à domicile, aide aux devoirs, activités d'éveil et surveillance sécurisée.",
+    "descrAr": "رعاية الأطفال بالمنزل، المساعدة في الواجبات المدرسية، وأنشطة ترفيهية وتعليمية آمنة.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Elderly & Home Caregiving",
+    "nameServFr": "Aide aux Personnes Âgées à Domicile",
+    "nameServAr": "رعاية المسنين والمرافقة المنزلية",
+    "descrEn": "Daily assistance for seniors, medication reminders, mobility support, and compassionate companionship.",
+    "descrFr": "Assistance quotidienne pour seniors, rappel de prise de médicaments, aide aux déplacements et compagnie.",
+    "descrAr": "مساعدة يومية للمسنين، التذكير بمواعيد الأدوية، المساعدة الحركية، وتوفير العناية الشخصية.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Private Home Security & Guarding",
+    "nameServFr": "Gardiennage & Sécurité Résidentielle",
+    "nameServAr": "حراسة وأمن المنازل والإقامات",
+    "descrEn": "On-site surveillance, access control, villa security, and regular property patrols.",
+    "descrFr": "Surveillance sur site, contrôle des entrées et sorties, protection de villas et rondes de sécurité.",
+    "descrAr": "حراسة أمنية للمنازل والإقامات، مراقبة المداخل، وتأمين العقارات السكنية ضد التسلل والسرقة.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Private Chef & Home Cooking",
+    "nameServFr": "Cuisinier à Domicile & Préparation de Repas",
+    "nameServAr": "طباخ منزلي وإعداد الوجبات",
+    "descrEn": "Personalized daily meal prep, traditional banquet cooking, and catering for private family events.",
+    "descrFr": "Préparation de repas sur mesure, cuisine traditionnelle, et service traiteur pour événements familiaux.",
+    "descrAr": "تحضير وجبات يومية صحية، طهي الأطباق التقليدية، وتجهيز الولائم والمناسبات العائلية الخاصة.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Pest Control & Extermination",
+    "nameServFr": "Dératisation & Désinsectisation",
+    "nameServAr": "مكافحة الحشرات والقوارض",
+    "descrEn": "Eradication of cockroaches, bedbugs, termites, and rodents using certified, safe treatments.",
+    "descrFr": "Élimination des cafards, punaises de lit, termites et rongeurs avec des produits agréés et sécurisés.",
+    "descrAr": "إبادة الصراصير، بق الفراش، النمل الأبيض، والقوارض باستخدام مبيدات معتمدة وآمنة للمنازل.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Locksmith & Emergency Door Opening",
+    "nameServFr": "Serrurerie & Dépannage d'Urgence",
+    "nameServAr": "خدمات الأقفال وفتح الأبواب المستعجل",
+    "descrEn": "Emergency door unlocking, cylinder replacements, reinforced security locks, and master key setups.",
+    "descrFr": "Ouverture de porte claquée, remplacement de barillets, pose de serrures multipoints et blindage.",
+    "descrAr": "فتح الأبواب العالقة بسرعة، تغيير أسطوانات الأقفال، وتركيب أقفال أمان متعددة النقاط.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Plaster & Drywall Work (Gypsum)",
+    "nameServFr": "Plâtrerie & Faux Plafonds",
+    "nameServAr": "نقش الجبس والأسقف المعلقة",
+    "descrEn": "Custom Moroccan gypsum carving, modern drywall installations, false ceilings, and hidden LED coves.",
+    "descrFr": "Pose de faux plafonds en plâtre ou BA13, corniches décoratives marocaines et coffrages LED modernes.",
+    "descrAr": "تركيب الأسقف المعلقة، قواطع الجبس (BA13)، ونقش الجبس المغربي العصري والتقليدي.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Upholstery & Curtain Installation",
+    "nameServFr": "Tapisserie & Pose de Rideaux",
+    "nameServAr": "تنجيد الأثاث وتركيب الستائر",
+    "descrEn": "Living room cushion refurbishing, sofa reupholstery, curtain rail mounting, and fabric restoration.",
+    "descrFr": "Rénovation de salons, confection et pose de rideaux, réfection de canapés et garnissage de mousse.",
+    "descrAr": "تجديد صالونات، تنجيد الأرائك وتغيير الأقمشة، وتفصيل وتثبيت قضبان الستائر المنزلية.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Waterproofing & Moisture Treatment",
+    "nameServFr": "Étanchéité & Traitement de l'Humidité",
+    "nameServAr": "عزل الأسطح ومعالجة الرطوبة",
+    "descrEn": "Rooftop bituminous waterproofing, anti-humidity wall treatments, and rain infiltration solutions.",
+    "descrFr": "Étanchéité bitumineuse de toitures, traitement anti-salpêtre, et isolation contre les infiltrations d'eau.",
+    "descrAr": "عزل أسطح المنازل ضد مياه الأمطار، معالجة رطوبة الجدران والتشققات بمواد عازلة مضمونة.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Ironwork & Welding",
+    "nameServFr": "Ferronnerie & Soudure Métallique",
+    "nameServAr": "حدادة ولحام المعادن",
+    "descrEn": "Custom iron window security bars, protective gates, metal handrails, and structural repairs.",
+    "descrFr": "Fabrication de grilles de défense, portails métalliques, garde-corps et réparations par soudure.",
+    "descrAr": "تفصيل شبك حماية النوافذ، بوابات الحديد، درابزين السلالم، وإصلاح الأبواب والهياكل المعدنية.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Washing & Ironing Service",
+    "nameServFr": "Blanchisserie & Repassage à Domicile",
+    "nameServAr": "غسيل وكي الملابس بالمنزل",
+    "descrEn": "In-home laundry washing, fabric sorting, professional clothes steaming, and organized folding.",
+    "descrFr": "Lavage du linge, repassage soigné de chemises et vêtements, pliage et rangement à domicile.",
+    "descrAr": "فرز وغسيل الملابس، كي القمصان والأقمشة باحترافية، وترتيب وتنسيق الخزائن المنزلية.",
+    "imageId": null,
+    "videoId": null
+  },
+  {
+    "nameServEn": "Pet Sitting & Dog Walking",
+    "nameServFr": "Garde d'Animaux & Promenade de Chiens",
+    "nameServAr": "رعاية الحيوانات الأليفة ومرافقتها",
+    "descrEn": "In-home cat and dog sitting, daily neighborhood walking, routine feeding, and litter cleaning.",
+    "descrFr": "Garde de chiens et chats à domicile, promenades quotidiennes, alimentation et soins de base.",
+    "descrAr": "مرافقة وإطعام الكلاب والقطط، تنظيم نزهات يومية، وتنظيف أماكن إقامة الحيوانات الأليفة.",
+    "imageId": null,
+    "videoId": null
+  }
+]
