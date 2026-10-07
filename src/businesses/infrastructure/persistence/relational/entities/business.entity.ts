@@ -26,8 +26,15 @@ import { LocalisationEntity } from 'src/localisations/infrastructure/persistence
   name: 'business',
 })
 export class BusinessEntity extends EntityRelationalHelper {
-  @OneToOne(() => AddressEntity, { eager: true, nullable: true })
-  @JoinColumn()
+  // ManyToOne on purpose: a single address (one contact, one building) can be
+  // shared by several businesses, and a OneToOne would put a unique index on
+  // business.addressId that rejects the second business.
+  @ManyToOne(() => AddressEntity, {
+    eager: true,
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'addressId' })
   Address?: AddressEntity | null;
 
   // src/businesses/infrastructure/persistence/relational/entities/business.entity.ts

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { EntrepriseEntity } from '../entities/entreprise.entity';
@@ -31,6 +31,7 @@ export class EntrepriseRelationalRepository implements EntrepriseRepository {
     const entities = await this.entrepriseRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
     });
 
     return entities.map((entity) => EntrepriseMapper.toDomain(entity));
@@ -61,7 +62,7 @@ export class EntrepriseRelationalRepository implements EntrepriseRepository {
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const updatedEntity = await this.entrepriseRepository.save(

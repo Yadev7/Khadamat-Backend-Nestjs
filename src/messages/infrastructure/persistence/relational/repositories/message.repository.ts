@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { MessageEntity } from '../entities/message.entity';
@@ -36,7 +36,7 @@ export class MessageRelationalRepository implements MessageRepository {
         : {},
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'DESC', id: 'ASC' },
     });
 
     return entities.map((entity) => MessageMapper.toDomain(entity));
@@ -64,7 +64,7 @@ export class MessageRelationalRepository implements MessageRepository {
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const updatedEntity = await this.messageRepository.save(

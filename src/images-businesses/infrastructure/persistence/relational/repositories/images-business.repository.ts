@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { ImagesBusinessEntity } from '../entities/images-business.entity';
@@ -33,6 +33,7 @@ export class ImagesBusinessRelationalRepository
     const entities = await this.imagesBusinessRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
     });
 
     return entities.map((entity) => ImagesBusinessMapper.toDomain(entity));
@@ -65,7 +66,7 @@ export class ImagesBusinessRelationalRepository
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const updatedEntity = await this.imagesBusinessRepository.save(

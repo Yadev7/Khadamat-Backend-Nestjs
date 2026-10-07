@@ -7,14 +7,21 @@ import { EntrepriseEntity } from '../entreprises/infrastructure/persistence/rela
 import { ContactsService } from '../contacts/contacts.service';
 import { Contact } from '../contacts/domain/contact';
 import { ContactEntity } from '../contacts/infrastructure/persistence/relational/entities/contact.entity';
+import { AddressEntity } from '../addresses/infrastructure/persistence/relational/entities/address.entity';
+import { CityEntity } from '../cities/infrastructure/persistence/relational/entities/city.entity';
+import { CityAreaEntity } from '../city-areas/infrastructure/persistence/relational/entities/city-area.entity';
+import { CountryEntity } from '../countries/infrastructure/persistence/relational/entities/country.entity';
+import { LocalisationEntity } from '../localisations/infrastructure/persistence/relational/entities/localisation.entity';
 import { MemberEntity } from './infrastructure/persistence/relational/entities/member.entity';
 import { MemberMapper } from './infrastructure/persistence/relational/mappers/member.mapper';
 
 import {
   Injectable,
   HttpStatus,
+  Logger,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { DataSource } from 'typeorm';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
@@ -24,6 +31,8 @@ import { Member } from './domain/member';
 import * as bcrypt from 'bcryptjs';
 @Injectable()
 export class MembersService {
+  private readonly logger = new Logger(MembersService.name);
+
   constructor(
     private readonly userService: UsersService,
     private readonly entrepriseService: EntreprisesService,
@@ -126,8 +135,20 @@ export class MembersService {
         if (!dtoUser?.email)
           throw new Error('Email is required for individuals.');
 
-        // Proper way: Use bcrypt here or inject UsersService method that accepts 'manager'
-        const hashedPassword = await bcrypt.hash('DefaultPassword123!', 10);
+        const existingUser = await manager.findOne(UserEntity, {
+          where: { email: dtoUser.email },
+        });
+        if (existingUser) {
+          throw new UnprocessableEntityException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            errors: { email: 'emailAlreadyExists' },
+          });
+        }
+
+        // A shared literal password meant anyone who guessed it could log in as
+        // every account ever created. Generate a unique one per account instead.
+        const plainPassword = randomBytes(18).toString('base64url');
+        const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
         userEntity = await manager.save(
           UserEntity,
@@ -137,6 +158,11 @@ export class MembersService {
             role: { id: 2 },
             status: { id: 1 },
           }),
+        );
+
+        this.logger.warn(
+          `Temporary password for new member "${dtoUser.email}": ${plainPassword} ` +
+            `- deliver it out of band and have the user change it.`,
         );
       }
 
@@ -150,12 +176,115 @@ export class MembersService {
         );
       }
 
-      // 3. Create Contact
+      // 3. Create Contact (its nested address must be persisted explicitly,
+      //    otherwise the city/country payload is silently dropped)
       if (!createMemberDto.contact)
         throw new Error('Contact details are mandatory.');
+
+      const { address: contactAddressDto, ...contactFields } =
+        createMemberDto.contact as Record<string, any>;
+
+      let addressEntity: AddressEntity | null = null;
+
+      if (contactAddressDto) {
+        if (contactAddressDto.id) {
+          const existingAddress = await manager.findOne(AddressEntity, {
+            where: { id: contactAddressDto.id },
+          });
+
+          if (!existingAddress) {
+            throw new UnprocessableEntityException({
+              status: HttpStatus.UNPROCESSABLE_ENTITY,
+              errors: { address: 'notExists' },
+            });
+          }
+
+          addressEntity = existingAddress;
+        } else {
+          const {
+            city: cityDto,
+            zone: zoneDto,
+            country: countryDto,
+            localisation: localisationDto,
+            ...addressFields
+          } = contactAddressDto;
+
+          const resolveRef = async <T>(
+            target: any,
+            ref: any,
+            field: string,
+          ): Promise<T | null> => {
+            if (!ref?.id) return null;
+
+            const found = await manager.findOne(target, {
+              where: { id: ref.id },
+            });
+
+            if (!found) {
+              throw new UnprocessableEntityException({
+                status: HttpStatus.UNPROCESSABLE_ENTITY,
+                errors: { [field]: 'notExists' },
+              });
+            }
+
+            return found as T;
+          };
+
+          const city = await resolveRef<CityEntity>(
+            CityEntity,
+            cityDto,
+            'city',
+          );
+          const country = await resolveRef<CountryEntity>(
+            CountryEntity,
+            countryDto,
+            'country',
+          );
+          const zone = await resolveRef<CityAreaEntity>(
+            CityAreaEntity,
+            zoneDto,
+            'zone',
+          );
+
+          let localisation: LocalisationEntity | null = null;
+
+          if (localisationDto?.id) {
+            localisation = await resolveRef<LocalisationEntity>(
+              LocalisationEntity,
+              localisationDto,
+              'localisation',
+            );
+          } else if (
+            localisationDto?.latitude !== undefined &&
+            localisationDto?.latitude !== null &&
+            localisationDto?.longitude !== undefined &&
+            localisationDto?.longitude !== null
+          ) {
+            localisation = manager.create(LocalisationEntity, {
+              latitude: localisationDto.latitude,
+              longitude: localisationDto.longitude,
+            });
+          }
+
+          addressEntity = await manager.save(
+            AddressEntity,
+            manager.create(AddressEntity, {
+              ...addressFields,
+              city,
+              zone,
+              country,
+              localisation,
+            }),
+          );
+        }
+      }
+
       const contactEntity = await manager.save(
         ContactEntity,
-        manager.create(ContactEntity, createMemberDto.contact),
+        manager.create(ContactEntity, {
+          ...contactFields,
+          address: addressEntity,
+        }),
       );
 
       // 4. Create Member

@@ -11,6 +11,7 @@ import { AuthService } from '../auth/auth.service';
 import { AuthGoogleService } from './auth-google.service';
 import { AuthGoogleLoginDto } from './dto/auth-google-login.dto';
 import { LoginResponseDto } from '../auth/dto/login-response.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Auth')
 @Controller({
@@ -29,6 +30,7 @@ export class AuthGoogleController {
   @SerializeOptions({
     groups: ['me'],
   })
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: AuthGoogleLoginDto): Promise<LoginResponseDto> {

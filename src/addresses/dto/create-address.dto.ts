@@ -4,6 +4,8 @@ import { CityDto } from '../../cities/dto/city.dto';
 
 import { CountryDto } from '../../countries/dto/country.dto';
 
+import { CityAreaDto } from '../../city-areas/dto/city-area.dto';
+
 import {
   // decorators here
 
@@ -48,6 +50,16 @@ export class CreateAddressDto {
   @Type(() => CityDto)
   @IsNotEmptyObject()
   city?: CityDto | null;
+
+  @ApiProperty({
+    required: false,
+    type: () => CityAreaDto,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CityAreaDto)
+  @IsNotEmptyObject()
+  zone?: CityAreaDto | null;
 
   @ApiProperty({
     required: false,

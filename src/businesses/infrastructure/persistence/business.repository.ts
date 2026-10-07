@@ -1,27 +1,31 @@
-import { EntityManager } from 'typeorm';
 import { DeepPartial } from '../../../utils/types/deep-partial.type';
 import { NullableType } from '../../../utils/types/nullable.type';
 import { IPaginationOptions } from '../../../utils/types/pagination-options';
 import { Business } from '../../domain/business';
 
-export abstract class BusinessRepository {
-  // abstract create(
-  //   data: Omit<Business, 'id' | 'createdAt' | 'updatedAt'>,
-  //   manager?: any,
-  // ): Promise<Business>;
+export type BusinessFilterOptions = {
+  cityId?: string;
+  zoneId?: string;
+  serviceId?: string;
+};
 
-  abstract create(
-    data: Business,
-    transactionManager?: EntityManager, // Add this
-  ): Promise<Business>;
+export type BusinessListResult = {
+  items: Business[];
+  total: number;
+};
+
+export abstract class BusinessRepository {
+  abstract create(data: Business, transactionManager?: any): Promise<Business>;
 
   abstract findAllWithPagination({
     paginationOptions,
     filterOptions,
+    relations,
   }: {
     paginationOptions: IPaginationOptions;
-    filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-  }): Promise<Business[]>;
+    filterOptions?: BusinessFilterOptions;
+    relations?: string;
+  }): Promise<BusinessListResult>;
 
   abstract findById(id: Business['id']): Promise<NullableType<Business>>;
 

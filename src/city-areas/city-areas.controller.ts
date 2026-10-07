@@ -25,7 +25,10 @@ import {
   InfinityPaginationResponse,
   InfinityPaginationResponseDto,
 } from '../utils/dto/infinity-pagination-response.dto';
-import { infinityPagination } from '../utils/infinity-pagination';
+import {
+  infinityPagination,
+  LOOKUP_MAX_LIMIT,
+} from '../utils/infinity-pagination';
 import { FindAllCityAreasDto } from './dto/find-all-city-areas.dto';
 import { Public } from '../auth/decorators/public.decorator';
 
@@ -57,8 +60,8 @@ export class CityAreasController {
   ): Promise<InfinityPaginationResponseDto<CityArea>> {
     const page = query?.page ?? 1;
     let limit = query?.limit ?? 10;
-    if (limit > 50) {
-      limit = 50;
+    if (limit > LOOKUP_MAX_LIMIT) {
+      limit = LOOKUP_MAX_LIMIT;
     }
 
     return infinityPagination(
@@ -66,6 +69,9 @@ export class CityAreasController {
         paginationOptions: {
           page,
           limit,
+        },
+        filterOptions: {
+          cityId: query.cityId,
         },
       }),
       { page, limit },

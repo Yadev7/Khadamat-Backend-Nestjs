@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { ContactEntity } from '../entities/contact.entity';
@@ -49,6 +49,7 @@ export class ContactRelationalRepository implements ContactRepository {
     const entities = await this.contactRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
       // CRITICAL: Add this line to include the address object
       relations: ['address'],
     });
@@ -78,7 +79,7 @@ export class ContactRelationalRepository implements ContactRepository {
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const updatedEntity = await this.contactRepository.save(

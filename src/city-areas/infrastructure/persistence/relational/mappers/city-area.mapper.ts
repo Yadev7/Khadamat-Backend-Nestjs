@@ -20,6 +20,9 @@ export class CityAreaMapper {
       domainEntity.city = null;
     }
 
+    // Exposed so clients can filter areas by city without a deep property read.
+    domainEntity.cityId = raw.cityId ?? raw.city?.id ?? null;
+
     domainEntity.nameAr = raw.nameAr;
 
     domainEntity.nameFr = raw.nameFr;
@@ -45,6 +48,11 @@ export class CityAreaMapper {
       persistenceEntity.city = CityMapper.toPersistence(domainEntity.city);
     } else if (domainEntity.city === null) {
       persistenceEntity.city = null;
+    }
+
+    const cityId = domainEntity.cityId ?? domainEntity.city?.id;
+    if (cityId) {
+      persistenceEntity.cityId = cityId;
     }
 
     persistenceEntity.nameAr = domainEntity.nameAr;

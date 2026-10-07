@@ -1,5 +1,6 @@
 import { LocalisationsModule } from '../localisations/localisations.module';
 import { CitiesModule } from '../cities/cities.module';
+import { CityAreasModule } from '../city-areas/city-areas.module';
 import { CountriesModule } from '../countries/countries.module';
 import {
   // do not remove this comment
@@ -14,6 +15,8 @@ import { RelationalAddressPersistenceModule } from './infrastructure/persistence
     LocalisationsModule,
 
     CitiesModule,
+
+    CityAreasModule,
 
     CountriesModule,
 

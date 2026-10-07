@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { SelectedBusinessEntity } from '../entities/selected-business.entity';
@@ -40,6 +40,7 @@ export class SelectedBusinessRelationalRepository
       relations: ['business'],
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
     });
 
     return entities.map((entity) => SelectedBusinessMapper.toDomain(entity));
@@ -75,7 +76,7 @@ export class SelectedBusinessRelationalRepository
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const updatedEntity = await this.selectedBusinessRepository.save(

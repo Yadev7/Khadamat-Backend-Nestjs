@@ -99,14 +99,17 @@ export class CityAreasService {
 
   findAllWithPagination({
     paginationOptions,
+    filterOptions,
   }: {
     paginationOptions: IPaginationOptions;
+    filterOptions?: { cityId?: string };
   }) {
     return this.cityAreaRepository.findAllWithPagination({
       paginationOptions: {
         page: paginationOptions.page,
         limit: paginationOptions.limit,
       },
+      filterOptions,
     });
   }
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { CallEntity } from '../entities/call.entity';
@@ -31,6 +31,7 @@ export class CallRelationalRepository implements CallRepository {
     const entities = await this.callRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
     });
 
     return entities.map((entity) => CallMapper.toDomain(entity));
@@ -58,7 +59,7 @@ export class CallRelationalRepository implements CallRepository {
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const updatedEntity = await this.callRepository.save(

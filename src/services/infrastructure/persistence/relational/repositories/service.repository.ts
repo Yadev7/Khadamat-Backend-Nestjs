@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { ServiceEntity } from '../entities/service.entity';
@@ -41,6 +41,7 @@ export class ServiceRelationalRepository implements ServiceRepository {
     const entities = await this.serviceRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
     });
 
     return entities.map((entity) => ServiceMapper.toDomain(entity));
@@ -68,7 +69,7 @@ export class ServiceRelationalRepository implements ServiceRepository {
     });
 
     if (!entity) {
-      throw new Error('Service not found');
+      throw new NotFoundException('Service not found');
     }
 
     const updatedPersistenceModel = ServiceMapper.toPersistence({

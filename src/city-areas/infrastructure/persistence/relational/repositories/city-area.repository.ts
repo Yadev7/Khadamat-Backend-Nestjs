@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { CityAreaEntity } from '../entities/city-area.entity';
@@ -41,15 +41,21 @@ export class CityAreaRelationalRepository implements CityAreaRepository {
 
   async findAllWithPagination({
     paginationOptions,
+    filterOptions,
   }: {
     paginationOptions: IPaginationOptions;
+    filterOptions?: { cityId?: string };
   }): Promise<CityArea[]> {
+    const cityId = filterOptions?.cityId?.trim() || undefined;
+
     // هنا المستودع يمتلك الصلاحية للوصول لـ TypeORM
     const entities = await this.cityAreaRepository.find({
+      where: cityId ? { cityId } : undefined,
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
       // --- هذا هو السطر المطلوب لحل مشكلة المناطق الفارغة ---
       relations: ['city', 'localisation'],
+      order: { nameFr: 'ASC', id: 'ASC' },
     });
 
     // الماپر يحول الكائنات من شكل قاعدة البيانات إلى شكل التطبيق
@@ -84,7 +90,7 @@ export class CityAreaRelationalRepository implements CityAreaRepository {
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const mergedDomain = {

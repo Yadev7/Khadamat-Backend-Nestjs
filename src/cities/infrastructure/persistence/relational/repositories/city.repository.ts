@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { CityEntity } from '../entities/city.entity';
@@ -39,6 +39,7 @@ export class CityRelationalRepository implements CityRepository {
     const entities = await this.cityRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
     });
 
     return entities.map((entity) => CityMapper.toDomain(entity));
@@ -68,7 +69,7 @@ export class CityRelationalRepository implements CityRepository {
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     // 2. تحويل الـ Payload القادم من السيرفيس إلى شكل Persistence Entity

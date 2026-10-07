@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { LocalisationEntity } from '../entities/localisation.entity';
@@ -33,6 +33,7 @@ export class LocalisationRelationalRepository
     const entities = await this.localisationRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
     });
 
     return entities.map((entity) => LocalisationMapper.toDomain(entity));
@@ -63,7 +64,7 @@ export class LocalisationRelationalRepository
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const updatedEntity = await this.localisationRepository.save(

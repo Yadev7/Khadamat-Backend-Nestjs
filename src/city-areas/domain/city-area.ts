@@ -22,6 +22,12 @@ export class CityArea {
   idCity?: City | null;
 
   @ApiProperty({
+    type: String,
+    nullable: true,
+  })
+  cityId?: string | null;
+
+  @ApiProperty({
     type: () => String,
     nullable: true,
   })

@@ -24,7 +24,10 @@ import {
   InfinityPaginationResponse,
   InfinityPaginationResponseDto,
 } from '../utils/dto/infinity-pagination-response.dto';
-import { infinityPagination } from '../utils/infinity-pagination';
+import {
+  infinityPagination,
+  LOOKUP_MAX_LIMIT,
+} from '../utils/infinity-pagination';
 import { FindAllServicesDto } from './dto/find-all-services.dto';
 import { Public } from '../auth/decorators/public.decorator';
 
@@ -55,8 +58,8 @@ export class ServicesController {
   ): Promise<InfinityPaginationResponseDto<Service>> {
     const page = query?.page ?? 1;
     let limit = query?.limit ?? 10;
-    if (limit > 50) {
-      limit = 50;
+    if (limit > LOOKUP_MAX_LIMIT) {
+      limit = LOOKUP_MAX_LIMIT;
     }
 
     return infinityPagination(

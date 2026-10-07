@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class FindAllCityAreasDto {
@@ -14,4 +14,11 @@ export class FindAllCityAreasDto {
   @IsNumber()
   @IsOptional()
   limit?: number;
+
+  @ApiPropertyOptional({
+    description: 'Only return the areas belonging to this city',
+  })
+  @IsOptional()
+  @IsString()
+  cityId?: string;
 }

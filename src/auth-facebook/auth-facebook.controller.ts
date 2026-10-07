@@ -11,6 +11,7 @@ import { AuthService } from '../auth/auth.service';
 import { AuthFacebookService } from './auth-facebook.service';
 import { AuthFacebookLoginDto } from './dto/auth-facebook-login.dto';
 import { LoginResponseDto } from '../auth/dto/login-response.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Auth')
 @Controller({
@@ -29,6 +30,7 @@ export class AuthFacebookController {
   @SerializeOptions({
     groups: ['me'],
   })
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(

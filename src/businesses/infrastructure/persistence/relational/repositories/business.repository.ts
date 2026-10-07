@@ -1,12 +1,96 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, EntityManager } from 'typeorm';
+import { Repository, In, EntityManager, SelectQueryBuilder } from 'typeorm';
 import { BusinessEntity } from '../entities/business.entity';
 import { Business } from '../../../../domain/business';
-import { BusinessRepository } from '../../business.repository';
+import {
+  BusinessFilterOptions,
+  BusinessListResult,
+  BusinessRepository,
+} from '../../business.repository';
 import { BusinessMapper } from '../mappers/business.mapper';
 import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
 import { DeepPartial } from 'src/utils/types/deep-partial.type';
+
+/**
+ * Every alias the business listing query is allowed to join. Key = alias used in
+ * the SQL, value = TypeORM relation path. Paths are declared relative to their
+ * parent alias so they must always be joined parent-first (see depth sorting).
+ */
+const BUSINESS_RELATION_JOINS: Record<string, string> = {
+  service: 'business.service',
+  flyer: 'business.flyer',
+  localisation: 'business.localisation',
+  contact: 'business.contact',
+  address: 'contact.address',
+  city: 'address.city',
+  zone: 'address.zone',
+  country: 'address.country',
+  addressLocalisation: 'address.localisation',
+  businessAddress: 'business.Address',
+  businessAddressCity: 'businessAddress.city',
+  businessAddressZone: 'businessAddress.zone',
+  businessAddressCountry: 'businessAddress.country',
+  businessAddressLocalisation: 'businessAddress.localisation',
+  owner: 'business.owner',
+  manager: 'business.manager',
+  audioAr: 'business.audioAr',
+  audioFr: 'business.audioFr',
+  audioEn: 'business.audioEn',
+  videoAr: 'business.videoAr',
+  videoFr: 'business.videoFr',
+  videoEn: 'business.videoEn',
+};
+
+/**
+ * Public (client facing) relation name -> aliases that must be selected.
+ * Each list also contains the aliases of every parent on the path, because
+ * selecting a nested relation without its parents produces `undefined` parents.
+ */
+const BUSINESS_RELATION_ALIASES: Record<string, string[]> = {
+  service: ['service'],
+  flyer: ['flyer'],
+  localisation: ['localisation'],
+  contact: ['contact'],
+  Address: ['businessAddress'],
+  'Address.city': ['businessAddress', 'businessAddressCity'],
+  'Address.zone': ['businessAddress', 'businessAddressZone'],
+  'Address.country': ['businessAddress', 'businessAddressCountry'],
+  'Address.localisation': ['businessAddress', 'businessAddressLocalisation'],
+  'contact.address': ['contact', 'address'],
+  'contact.address.city': ['contact', 'address', 'city'],
+  'contact.address.zone': ['contact', 'address', 'zone'],
+  'contact.address.country': ['contact', 'address', 'country'],
+  'contact.address.localisation': ['contact', 'address', 'addressLocalisation'],
+  owner: ['owner'],
+  manager: ['manager'],
+  audioAr: ['audioAr'],
+  audioFr: ['audioFr'],
+  audioEn: ['audioEn'],
+  videoAr: ['videoAr'],
+  videoFr: ['videoFr'],
+  videoEn: ['videoEn'],
+};
+
+/** Aliases needed on top of the requested relations to evaluate city/zone filters. */
+const FILTER_ALIASES: Record<'cityId' | 'zoneId', string[]> = {
+  cityId: [
+    'contact',
+    'address',
+    'city',
+    'businessAddress',
+    'businessAddressCity',
+  ],
+  zoneId: [
+    'contact',
+    'address',
+    'zone',
+    'businessAddress',
+    'businessAddressZone',
+  ],
+};
+
+const pathDepth = (path: string) => path.split('.').length;
 
 @Injectable()
 export class BusinessRelationalRepository implements BusinessRepository {
@@ -40,6 +124,12 @@ export class BusinessRelationalRepository implements BusinessRepository {
         videoFr: true,
         videoEn: true,
         contact: { address: { localisation: true, city: true, zone: true } },
+        Address: {
+          localisation: true,
+          city: true,
+          zone: true,
+          country: true,
+        },
         localisation: true,
         owner: true,
         manager: true,
@@ -48,263 +138,100 @@ export class BusinessRelationalRepository implements BusinessRepository {
 
     if (!entity) return null;
 
-    // تحويل الكيان إلى Domain Model
-    const domain = BusinessMapper.toDomain(entity);
-
-    // ⚠️ حماية حاسمة: دمج العلاقات المتداخلة يدوياً لضمان عدم ضياعها بسبب قيود الـ Mapper
-    // هذه الخطوة تضمن وصول بيانات الموقع (localisation) والعنوان للـ Frontend
-    (domain as any).contact = entity.contact;
-    (domain as any).localisation = entity.localisation;
-    (domain as any).service = entity.service;
-    (domain as any).owner = entity.owner;
-    (domain as any).manager = entity.manager;
-
-    (domain as any).audioAr = entity.audioAr;
-    (domain as any).audioFr = entity.audioFr;
-    (domain as any).audioEn = entity.audioEn;
-    (domain as any).videoAr = entity.videoAr;
-    (domain as any).videoFr = entity.videoFr;
-    (domain as any).videoEn = entity.videoEn;
-
-    return domain;
+    return BusinessMapper.toDomain(entity);
   }
 
   async findAllWithPagination({
     paginationOptions,
     filterOptions,
+    relations,
   }: {
     paginationOptions: IPaginationOptions;
-    filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-  }): Promise<Business[]> {
-    const queryBuilder = this.repository
-      .createQueryBuilder('business')
-      .leftJoinAndSelect('business.service', 'service')
-      .leftJoinAndSelect('business.flyer', 'flyer')
-      .leftJoinAndSelect('business.contact', 'contact')
-      .leftJoinAndSelect('contact.address', 'address')
-      .leftJoinAndSelect('address.localisation', 'addressLocalisation')
-      .leftJoinAndSelect('business.localisation', 'localisation');
+    filterOptions?: BusinessFilterOptions;
+    relations?: string;
+  }): Promise<BusinessListResult> {
+    const cityId = filterOptions?.cityId?.trim() || undefined;
+    const zoneId = filterOptions?.zoneId?.trim() || undefined;
+    const serviceId = filterOptions?.serviceId?.trim() || undefined;
 
-    // ONLY filter by Service for now
-    if (filterOptions?.serviceId) {
-      queryBuilder.andWhere('service.id = :serviceId', {
-        serviceId: filterOptions.serviceId,
-      });
+    const selectedAliases = new Set<string>();
+    const joinedAliases = new Set<string>();
+
+    const join = (alias: string, select: boolean) => {
+      joinedAliases.add(alias);
+      if (select) selectedAliases.add(alias);
+    };
+
+    // Relations explicitly requested by the client (whitelisted, unknown ones ignored).
+    const requested = (relations ?? '')
+      .split(',')
+      .map((name) => name.trim())
+      .filter(Boolean);
+
+    for (const name of requested) {
+      const aliases = BUSINESS_RELATION_ALIASES[name];
+      if (!aliases) continue;
+      for (const alias of aliases) join(alias, true);
     }
 
-    const entities = await queryBuilder
+    // Filtering needs its joins present even when they were not requested.
+    if (serviceId) join('service', false);
+    if (cityId) for (const alias of FILTER_ALIASES.cityId) join(alias, false);
+    if (zoneId) for (const alias of FILTER_ALIASES.zoneId) join(alias, false);
+
+    const queryBuilder: SelectQueryBuilder<BusinessEntity> =
+      this.repository.createQueryBuilder('business');
+
+    // Parents must be joined before their children, otherwise TypeORM emits a
+    // child join referencing an alias that does not exist yet.
+    const orderedJoins = Array.from(joinedAliases).sort(
+      (a, b) =>
+        pathDepth(BUSINESS_RELATION_JOINS[a]) -
+        pathDepth(BUSINESS_RELATION_JOINS[b]),
+    );
+
+    for (const alias of orderedJoins) {
+      const path = BUSINESS_RELATION_JOINS[alias];
+      if (selectedAliases.has(alias)) {
+        queryBuilder.leftJoinAndSelect(path, alias);
+      } else {
+        queryBuilder.leftJoin(path, alias);
+      }
+    }
+
+    if (serviceId) {
+      queryBuilder.andWhere('service.id = :serviceId', { serviceId });
+    }
+
+    if (cityId) {
+      queryBuilder.andWhere(
+        '(city.id = :cityId OR businessAddressCity.id = :cityId)',
+        { cityId },
+      );
+    }
+
+    if (zoneId) {
+      queryBuilder.andWhere(
+        '(zone.id = :zoneId OR businessAddressZone.id = :zoneId)',
+        { zoneId },
+      );
+    }
+
+    // Without a stable ORDER BY, LIMIT/OFFSET pagination can repeat or skip rows.
+    queryBuilder
+      .orderBy('business.createdAt', 'DESC')
+      .addOrderBy('business.id', 'ASC');
+
+    const [entities, total] = await queryBuilder
       .skip((paginationOptions.page - 1) * paginationOptions.limit)
       .take(paginationOptions.limit)
-      .getMany();
+      .getManyAndCount();
 
-    return entities.map((entity) => BusinessMapper.toDomain(entity));
+    return {
+      items: entities.map((entity) => BusinessMapper.toDomain(entity)),
+      total,
+    };
   }
-
-  // async findAllWithPagination({
-  //   paginationOptions,
-  //   filterOptions,
-  // }: {
-  //   paginationOptions: IPaginationOptions;
-  //   filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-  // }): Promise<Business[]> {
-  //   const queryBuilder = this.repository
-  //     .createQueryBuilder('business')
-  //     .leftJoinAndSelect('business.service', 'service')
-  //     .leftJoinAndSelect('business.flyer', 'flyer')
-  //     .leftJoinAndSelect('business.contact', 'contact')
-  //     .leftJoinAndSelect('contact.address', 'address')
-  //     .leftJoinAndSelect('address.city', 'city')     // Ensure city relation exists on address
-  //     .leftJoinAndSelect('address.zone', 'zone')     // Ensure zone relation exists on address
-  //     .leftJoinAndSelect('address.localisation', 'addressLocalisation')
-  //     .leftJoinAndSelect('business.localisation', 'localisation');
-  //   // 1. Filter by Service (Mandatory)
-  //   if (filterOptions?.serviceId) {
-  //     queryBuilder.andWhere('service.id = :serviceId', {
-  //       serviceId: filterOptions.serviceId,
-  //     });
-  //   }
-
-  //   // 2. Filter by Zone (if provided)
-  //    if (filterOptions?.zoneId) {
-  //     queryBuilder.andWhere('(zone.id = :zoneId OR address.zoneId = :zoneId)', {
-  //       zoneId: filterOptions.zoneId,
-  //     });
-  //   }
-  //   // 3. Filter by City (if zone is not selected, but city is)
-  //   else if (filterOptions?.cityId) {
-  //     queryBuilder.andWhere('(city.id = :cityId OR address.cityId = :cityId)', {
-  //       cityId: filterOptions.cityId,
-  //     });
-  //   }
-
-  //   // Pagination execution
-  //   const entities = await queryBuilder
-  //     .skip((paginationOptions.page - 1) * paginationOptions.limit)
-  //     .take(paginationOptions.limit)
-  //     .getMany();
-
-  //   return entities.map((entity) => {
-  //     const domain = BusinessMapper.toDomain(entity);
-  //     (domain as any).contact = entity.contact;
-  //     (domain as any).localisation = entity.localisation;
-  //     (domain as any).service = entity.service;
-  //     (domain as any).flyer = entity.flyer;
-  //     return domain;
-  //   });
-  // }
-
-  // async findAllWithPagination({
-  //   paginationOptions,
-  //   filterOptions,
-  // }: {
-  //   paginationOptions: IPaginationOptions;
-  //   filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-  // }): Promise<Business[]> {
-  //   const queryBuilder = this.repository
-  //     .createQueryBuilder('business')
-  //     .leftJoinAndSelect('business.service', 'service')
-  //     .leftJoinAndSelect('business.flyer', 'flyer')
-  //     .leftJoinAndSelect('business.contact', 'contact')
-  //     .leftJoinAndSelect('contact.address', 'address')
-  //     .leftJoinAndSelect('address.city', 'city')
-  //     .leftJoinAndSelect('address.zone', 'zone')
-  //     .leftJoinAndSelect('address.localisation', 'addressLocalisation')
-  //     .leftJoinAndSelect('business.localisation', 'localisation');
-
-  //   // 1. Filter by Service (Mandatory)
-  //   if (filterOptions?.serviceId) {
-  //     queryBuilder.andWhere('service.id = :serviceId', {
-  //       serviceId: filterOptions.serviceId,
-  //     });
-  //   }
-
-  //   // 2. Filter by Zone (checking via contact.address.zone or zone relation)
-  //   if (filterOptions?.zoneId) {
-  //     queryBuilder.andWhere('(zone.id = :zoneId OR address.zoneId = :zoneId)', {
-  //       zoneId: filterOptions.zoneId,
-  //     });
-  //   }
-  //   // 3. Filter by City (checking via contact.address.city or city relation)
-  //   else if (filterOptions?.cityId) {
-  //     queryBuilder.andWhere('(city.id = :cityId OR address.cityId = :cityId)', {
-  //       cityId: filterOptions.cityId,
-  //     });
-  //   }
-
-  //   // Pagination execution
-  //   const entities = await queryBuilder
-  //     .skip((paginationOptions.page - 1) * paginationOptions.limit)
-  //     .take(paginationOptions.limit)
-  //     .getMany();
-
-  //   return entities.map((entity) => {
-  //     const domain = BusinessMapper.toDomain(entity);
-  //     (domain as any).contact = entity.contact;
-  //     (domain as any).localisation = entity.localisation;
-  //     (domain as any).service = entity.service;
-  //     (domain as any).flyer = entity.flyer;
-  //     return domain;
-  //   });
-  // }
-
-  //   async findAllWithPagination({
-  //   paginationOptions,
-  //   filterOptions,
-  // }: {
-  //   paginationOptions: IPaginationOptions;
-  //   filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-  // }): Promise<Business[]> {
-  //   const queryBuilder = this.repository
-  //     .createQueryBuilder('business')
-  //     .leftJoinAndSelect('business.service', 'service')
-  //     .leftJoinAndSelect('business.flyer', 'flyer')
-  //     .leftJoinAndSelect('business.contact', 'contact')
-  //     .leftJoinAndSelect('contact.address', 'address')
-  //     .leftJoinAndSelect('address.localisation', 'addressLocalisation')
-  //     .leftJoinAndSelect('business.localisation', 'localisation');
-
-  //   // 1. Filter by Service (Mandatory / Core filter)
-  //   if (filterOptions?.serviceId) {
-  //     queryBuilder.andWhere('service.id = :serviceId', {
-  //       serviceId: filterOptions.serviceId,
-  //     });
-  //   }
-
-  //   // 2. Filter by Zone (if selected, find businesses whose address/localisation matches the zone or is near it)
-  //   if (filterOptions?.zoneId) {
-  //     // Assuming your Zone entity is linked or you can fetch zone bounds,
-  //     // or if address has a zone relation:
-  //     queryBuilder.andWhere('address.zone.id = :zoneId', {
-  //       zoneId: filterOptions.zoneId,
-  //     });
-  //   }
-  //   // 3. Filter by City (if zone is not selected, but city is)
-  //   else if (filterOptions?.cityId) {
-  //     queryBuilder.andWhere('address.city.id = :cityId', {
-  //       cityId: filterOptions.cityId,
-  //     });
-  //   }
-
-  //   // Pagination execution
-  //   const entities = await queryBuilder
-  //     .skip((paginationOptions.page - 1) * paginationOptions.limit)
-  //     .take(paginationOptions.limit)
-  //     .getMany();
-
-  //   return entities.map((entity) => {
-  //     const domain = BusinessMapper.toDomain(entity);
-  //     // تأمين تمرير البيانات للـ Frontend
-  //     (domain as any).contact = entity.contact;
-  //     (domain as any).localisation = entity.localisation;
-  //     (domain as any).service = entity.service;
-  //     (domain as any).flyer = entity.flyer;
-  //     return domain;
-  //   });
-  // }
-
-  // async findAllWithPagination({
-  //   paginationOptions,
-  //   filterOptions,
-  // }: {
-  //   paginationOptions: IPaginationOptions;
-  //   filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-  // }): Promise<Business[]> {
-  //   const query = this.repository
-  //     .createQueryBuilder('business')
-  //     .leftJoinAndSelect('business.owner', 'owner')
-  //     .leftJoinAndSelect('business.service', 'service')
-  //     .leftJoinAndSelect('business.flyer', 'flyer')
-  //     .leftJoinAndSelect('business.localisation', 'localisation')
-  //     .leftJoinAndSelect('business.contact', 'contact')
-  //     .leftJoinAndSelect('contact.address', 'address')
-  //     .leftJoinAndSelect('address.city', 'city')
-  //     .leftJoinAndSelect('address.zone', 'zone')
-  //     .leftJoinAndSelect('address.localisation', 'addressLocalisation');
-
-  //   if (filterOptions?.serviceId) {
-  //     query.andWhere('business.serviceId = :serviceId', { serviceId: filterOptions.serviceId });
-  //   }
-  //   if (filterOptions?.cityId) {
-  //     query.andWhere('(address.cityId = :cityId OR city.id = :cityId)', { cityId: filterOptions.cityId });
-  //   }
-  //   if (filterOptions?.zoneId) {
-  //     query.andWhere('(address.zoneId = :zoneId OR zone.id = :zoneId)', { zoneId: filterOptions.zoneId });
-  //   }
-
-  //   query.orderBy('business.createdAt', 'DESC')
-  //        .skip((paginationOptions.page - 1) * paginationOptions.limit)
-  //        .take(paginationOptions.limit);
-
-  //   const entities = await query.getMany();
-
-  //   return entities.map((entity) => {
-  //     const domain = BusinessMapper.toDomain(entity);
-  //     // تأمين تمرير البيانات للـ Frontend
-  //     (domain as any).contact = entity.contact;
-  //     (domain as any).localisation = entity.localisation;
-  //     return domain;
-  //   });
-  // }
 
   async update(
     id: Business['id'],

@@ -29,6 +29,7 @@ export abstract class ContactRepository {
     const entities = await this.contactEntityRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
       relations: ['address'], // <--- THIS LINE IS THE KEY
     });
 

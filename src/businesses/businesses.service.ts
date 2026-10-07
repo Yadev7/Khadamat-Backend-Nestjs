@@ -7,7 +7,11 @@ import {
 } from '@nestjs/common';
 import { CreateBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
-import { BusinessRepository } from './infrastructure/persistence/business.repository';
+import {
+  BusinessFilterOptions,
+  BusinessListResult,
+  BusinessRepository,
+} from './infrastructure/persistence/business.repository';
 import { IPaginationOptions } from '../utils/types/pagination-options';
 import { Business } from './domain/business';
 
@@ -23,8 +27,10 @@ import { FileType } from 'src/files/domain/file';
 import { FileMapper } from 'src/files/infrastructure/persistence/relational/mappers/file.mapper';
 import { FileEntity } from 'src/files/infrastructure/persistence/relational/entities/file.entity';
 
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { AddressesService } from 'src/addresses/addresses.service';
+import { Address } from 'src/addresses/domain/address';
+import { ContactEntity } from 'src/contacts/infrastructure/persistence/relational/entities/contact.entity';
 
 @Injectable()
 export class BusinessesService {
@@ -47,6 +53,50 @@ export class BusinessesService {
     if (!fileDto?.id) return undefined;
     const file = await this.filesService.findById(fileDto.id);
     return file ? FileMapper.toDomain(file as FileEntity) : undefined;
+  }
+
+  /**
+   * Address rows are shared with the contact, so the business only needs the
+   * reference. Loading it through the transaction manager keeps the lookup
+   * inside the surrounding create/update transaction.
+   */
+  private async findContactAddress(
+    contactId: Contact['id'],
+    manager?: EntityManager,
+  ): Promise<Address | null> {
+    const repo = (manager ?? this.dataSource).getRepository(ContactEntity);
+    const contactEntity = await repo.findOne({
+      where: { id: contactId },
+      relations: { address: true },
+    });
+
+    return contactEntity?.address
+      ? ({ id: contactEntity.address.id } as Address)
+      : null;
+  }
+
+  /**
+   * Resolves the address the business must be linked to. Priority: an explicit
+   * address coming from the form, otherwise the selected contact's address.
+   */
+  private async resolveBusinessAddress(
+    dto: { Address?: { id?: string } | null },
+    contact?: Contact | null,
+    manager?: EntityManager,
+  ): Promise<Address | null | undefined> {
+    if (dto.Address?.id) {
+      const address = await this.addressService.findById(dto.Address.id);
+      if (!address) {
+        throw new UnprocessableEntityException({ address: 'notExists' });
+      }
+      return { id: address.id } as Address;
+    }
+
+    if (contact?.id) {
+      return this.findContactAddress(contact.id, manager);
+    }
+
+    return undefined;
   }
 
   async create(createBusinessDto: CreateBusinessDto): Promise<Business> {
@@ -74,6 +124,19 @@ export class BusinessesService {
         );
       }
 
+      if (!createBusinessDto.manager?.id) {
+        throw new UnprocessableEntityException({
+          manager: 'managerIsRequired',
+        });
+      }
+
+      const manager = await this.memberService.findById(
+        createBusinessDto.manager.id,
+      );
+      if (!manager) {
+        throw new UnprocessableEntityException({ manager: 'managerNotExists' });
+      }
+
       let service: Service | null | undefined;
       if (createBusinessDto.service?.id) {
         service = await this.serviceService.findById(
@@ -81,14 +144,28 @@ export class BusinessesService {
         );
       }
 
-      // 3. Map Files
+      // 3. Address: link the business to its address row (explicit one from
+      //    the form, otherwise the selected contact's address) so the
+      //    city/zone/localisation filters of the search page can match it.
+      const address = await this.resolveBusinessAddress(
+        createBusinessDto,
+        contact,
+        queryRunner.manager,
+      );
+
+      // 4. Map Files
       const flyer = await this.mapFile(createBusinessDto.flyer);
 
-      // 4. Handle localisation creation within the transaction
+      // 5. Handle localisation creation within the transaction
       let savedLocalisation: any = null;
       if (createBusinessDto.localisation) {
         const { latitude, longitude } = createBusinessDto.localisation;
-        if (latitude && longitude) {
+        if (
+          latitude !== undefined &&
+          latitude !== null &&
+          longitude !== undefined &&
+          longitude !== null
+        ) {
           const localisationRepo =
             queryRunner.manager.getRepository('localisation');
           const newLocEntity = localisationRepo.create({
@@ -104,16 +181,18 @@ export class BusinessesService {
         contact: _c,
         service: _s,
         localisation: _loc,
+        Address: _addr,
         ...restOfDto
       } = createBusinessDto;
 
-      // 5. Save via Repository passing the Transaction Manager
+      // 6. Save via Repository passing the Transaction Manager
       const result = await this.businessRepository.create(
         {
           ...restOfDto,
           owner,
           contact,
           service,
+          Address: address,
           flyer,
           localisation: savedLocalisation,
           audioAr: await this.mapFile(createBusinessDto.audioAr),
@@ -122,7 +201,7 @@ export class BusinessesService {
           videoAr: await this.mapFile(createBusinessDto.videoAr),
           videoFr: await this.mapFile(createBusinessDto.videoFr),
           videoEn: await this.mapFile(createBusinessDto.videoEn),
-          manager: owner,
+          manager,
         } as any,
         queryRunner.manager,
       );
@@ -160,6 +239,18 @@ export class BusinessesService {
       contact = contactObject;
     } else if (updateBusinessDto.contact === null) {
       contact = null;
+    }
+
+    // Keep the business address in sync: an explicit address wins, otherwise
+    // follow the (possibly new) contact so address filters keep matching.
+    let address: Address | null | undefined = undefined;
+    if (updateBusinessDto.Address !== undefined) {
+      address =
+        updateBusinessDto.Address === null
+          ? null
+          : await this.resolveBusinessAddress(updateBusinessDto, null);
+    } else if (contact !== undefined) {
+      address = contact?.id ? await this.findContactAddress(contact.id) : null;
     }
 
     let service: Service | null | undefined = undefined;
@@ -226,12 +317,14 @@ export class BusinessesService {
       videoFr: _vFr,
       videoEn: _vEn,
       manager: _m,
+      Address: _addr,
       ...restOfDto
     } = updateBusinessDto;
 
     return this.businessRepository.update(id, {
       ...restOfDto,
       contact,
+      Address: address,
       service,
       owner,
       manager,
@@ -248,40 +341,32 @@ export class BusinessesService {
   async findAllWithPagination({
     paginationOptions,
     filterOptions,
+    relations,
   }: {
     paginationOptions: IPaginationOptions;
-    filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-  }) {
-    // طباعة الفلاتر للتأكد من عبورها بسلام من الـ Controller إلى الـ Repository
-    console.log('💼 Service received filterOptions:', filterOptions);
+    filterOptions?: BusinessFilterOptions;
+    relations?: string;
+  }): Promise<BusinessListResult> {
+    // Drop inactive criteria so omitted/blank filters keep the original unfiltered behaviour
+    const normalize = (value?: string) => {
+      const trimmed = value?.trim();
+      return trimmed ? trimmed : undefined;
+    };
+
+    const cleanFilters = {
+      cityId: normalize(filterOptions?.cityId),
+      zoneId: normalize(filterOptions?.zoneId),
+      serviceId: normalize(filterOptions?.serviceId),
+    };
+
+    const hasActiveFilter = Object.values(cleanFilters).some(Boolean);
 
     return this.businessRepository.findAllWithPagination({
       paginationOptions,
-      filterOptions,
+      filterOptions: hasActiveFilter ? cleanFilters : undefined,
+      relations,
     });
   }
-
-  // async findAllWithPagination({
-  //   paginationOptions,
-  //   filterOptions,
-  // }: {
-  //   paginationOptions: IPaginationOptions;
-  //   filterOptions?: { cityId?: string; zoneId?: string; serviceId?: string };
-  // }) {
-  //   // 1. Clean up undefined filters so only active criteria are passed
-  //   const cleanFilters = filterOptions
-  //     ? Object.fromEntries(
-  //         Object.entries(filterOptions).filter(([_, v]) => v !== undefined && v !== null && v !== '')
-  //       )
-  //     : undefined;
-
-  //   console.log("💼 Service cleaned filterOptions:", cleanFilters);
-
-  //   return this.businessRepository.findAllWithPagination({
-  //     paginationOptions,
-  //     filterOptions: cleanFilters,
-  //   });
-  // }
 
   async findById(id: Business['id']): Promise<Business | null> {
     return this.businessRepository.findById(id);

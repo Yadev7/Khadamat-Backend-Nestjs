@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { MemberEntity } from '../entities/member.entity';
@@ -54,6 +54,7 @@ export class MemberRelationalRepository implements MemberRepository {
     const entities = await this.memberRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
       // --- THE FIX: Explicitly list relations here ---
       relations: [
         'user',
@@ -91,7 +92,7 @@ export class MemberRelationalRepository implements MemberRepository {
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const updatedEntity = await this.memberRepository.save(

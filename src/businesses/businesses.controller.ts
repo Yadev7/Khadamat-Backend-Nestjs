@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { Business } from './domain/business';
 import { InfinityPaginationResponseDto } from '../utils/dto/infinity-pagination-response.dto';
+import { InfinityPaginationResponse } from '../utils/dto/infinity-pagination-response.dto';
 import { infinityPagination } from '../utils/infinity-pagination';
 import { FindAllBusinessesDto } from './dto/find-all-businesses.dto';
 import { Public } from '../auth/decorators/public.decorator';
@@ -41,30 +42,11 @@ export class BusinessesController {
     return this.businessesService.create(createBusinessDto);
   }
 
-  // @Get()
-  // @Public()
-  // async findAll(
-  //   @Query() query: FindAllBusinessesDto,
-  // ): Promise<InfinityPaginationResponseDto<Business>> {
-  //   const page = query?.page ?? 1;
-  //   let limit = query?.limit ?? 10;
-  //   if (limit > 50) limit = 50;
-
-  //   return infinityPagination(
-  //     await this.businessesService.findAllWithPagination({
-  //       paginationOptions: { page, limit },
-  //       filterOptions: {
-  //         cityId: query.cityId,   // Expects cityId from query params
-  //         zoneId: query.zoneId,   // Expects zoneId from query params
-  //         serviceId: query.service // Expects service from query params
-  //       },
-  //     }),
-  //     { page, limit },
-  //   );
-  // }
-
   @Get()
   @Public()
+  @ApiOkResponse({
+    type: InfinityPaginationResponse(Business),
+  })
   async findAll(
     @Query() query: FindAllBusinessesDto,
   ): Promise<InfinityPaginationResponseDto<Business>> {
@@ -72,52 +54,20 @@ export class BusinessesController {
     let limit = query?.limit ?? 10;
     if (limit > 50) limit = 50;
 
-    return infinityPagination(
-      await this.businessesService.findAllWithPagination({
+    const { items, total } = await this.businessesService.findAllWithPagination(
+      {
         paginationOptions: { page, limit },
         filterOptions: {
           cityId: query.cityId,
           zoneId: query.zoneId,
-          serviceId: query.service,
+          serviceId: query.service || query.serviceId,
         },
-      }),
-      { page, limit },
+        relations: query.relations,
+      },
     );
+
+    return infinityPagination(items, { page, limit }, { total });
   }
-
-  // @Get(':id')
-  // @Public()
-  // @ApiParam({
-  //   name: 'id',
-  //   type: String,
-  //   required: true,
-  // })
-  // @ApiOkResponse({
-  //   type: Business,
-  // })
-  // findById(@Param('id') id: string) {
-  //   return this.businessesService.findById(id);
-  // }
-
-  // @Get(':id')
-  // @Public()
-  // async findById(@Param('id') id: string) {
-  //   // إضافة تحقق بسيط
-  //   if (!id || id === 'undefined') return null;
-  //   return this.businessesService.findById(id);
-  // }
-
-  // @Get(':id')
-  // @Public()
-  // async findById(
-  //   @Param('id') id: string,
-  //   @Query('relations') relations?: string
-  // ) {
-  //   if (!id || id === 'undefined') return null;
-  //   // Convert comma-separated string into an array
-  //   const relationsArray = relations ? relations.split(',') : [];
-  //   return this.businessesService.findById(id);
-  // }
 
   @Get(':id')
   @Public()

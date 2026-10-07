@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { AddressEntity } from '../entities/address.entity';
@@ -31,6 +31,7 @@ export class AddressRelationalRepository implements AddressRepository {
     const entities = await this.addressRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
     });
 
     return entities.map((entity) => AddressMapper.toDomain(entity));
@@ -58,7 +59,7 @@ export class AddressRelationalRepository implements AddressRepository {
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const updatedEntity = await this.addressRepository.save(

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { CountryEntity } from '../entities/country.entity';
@@ -32,6 +32,7 @@ export class CountryRelationalRepository implements CountryRepository {
     const entities = await this.countryRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
       relations: ['localisation', 'flagImg'],
     });
 
@@ -63,7 +64,7 @@ export class CountryRelationalRepository implements CountryRepository {
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const mergedDomain = {

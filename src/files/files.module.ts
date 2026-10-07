@@ -9,6 +9,7 @@ import { FileConfig, FileDriver } from './config/file-config.type';
 import { FilesLocalModule } from './infrastructure/uploader/local/files.module';
 import { FilesS3Module } from './infrastructure/uploader/s3/files.module';
 import { FilesS3PresignedModule } from './infrastructure/uploader/s3-presigned/files.module';
+import { FilesController } from './files.controller';
 
 const infrastructurePersistenceModule = RelationalFilePersistenceModule;
 
@@ -25,6 +26,7 @@ const infrastructureUploaderModule =
     infrastructurePersistenceModule,
     infrastructureUploaderModule,
   ],
+  controllers: [FilesController],
   providers: [FilesService],
   exports: [FilesService, infrastructurePersistenceModule],
 })

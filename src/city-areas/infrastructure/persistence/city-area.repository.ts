@@ -10,8 +10,10 @@ export abstract class CityAreaRepository {
 
   abstract findAllWithPagination({
     paginationOptions,
+    filterOptions,
   }: {
     paginationOptions: IPaginationOptions;
+    filterOptions?: { cityId?: string };
   }): Promise<CityArea[]>;
 
   abstract findById(id: CityArea['id']): Promise<NullableType<CityArea>>;

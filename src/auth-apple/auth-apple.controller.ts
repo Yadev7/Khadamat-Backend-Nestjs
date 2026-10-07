@@ -11,6 +11,7 @@ import { AuthService } from '../auth/auth.service';
 import { AuthAppleService } from './auth-apple.service';
 import { AuthAppleLoginDto } from './dto/auth-apple-login.dto';
 import { LoginResponseDto } from '../auth/dto/login-response.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Auth')
 @Controller({
@@ -29,6 +30,7 @@ export class AuthAppleController {
   @SerializeOptions({
     groups: ['me'],
   })
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: AuthAppleLoginDto): Promise<LoginResponseDto> {

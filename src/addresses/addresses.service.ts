@@ -4,6 +4,9 @@ import { Localisation } from '../localisations/domain/localisation';
 import { CitiesService } from '../cities/cities.service';
 import { City } from '../cities/domain/city';
 
+import { CityAreasService } from '../city-areas/city-areas.service';
+import { CityArea } from '../city-areas/domain/city-area';
+
 import { CountriesService } from '../countries/countries.service';
 import { Country } from '../countries/domain/country';
 
@@ -25,6 +28,8 @@ export class AddressesService {
     private readonly localisationService: LocalisationsService,
 
     private readonly cityService: CitiesService,
+
+    private readonly cityAreaService: CityAreasService,
 
     private readonly countryService: CountriesService,
 
@@ -73,6 +78,25 @@ export class AddressesService {
       city = null;
     }
 
+    let zone: CityArea | null | undefined = undefined;
+
+    if (createAddressDto.zone) {
+      const zoneObject = await this.cityAreaService.findById(
+        createAddressDto.zone.id,
+      );
+      if (!zoneObject) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            zone: 'notExists',
+          },
+        });
+      }
+      zone = zoneObject;
+    } else if (createAddressDto.zone === null) {
+      zone = null;
+    }
+
     let country: Country | null | undefined = undefined;
 
     if (createAddressDto.country) {
@@ -98,6 +122,8 @@ export class AddressesService {
       localisation,
 
       city,
+
+      zone,
 
       country,
 
@@ -172,6 +198,25 @@ export class AddressesService {
       city = null;
     }
 
+    let zone: CityArea | null | undefined = undefined;
+
+    if (updateAddressDto.zone) {
+      const zoneObject = await this.cityAreaService.findById(
+        updateAddressDto.zone.id,
+      );
+      if (!zoneObject) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            zone: 'notExists',
+          },
+        });
+      }
+      zone = zoneObject;
+    } else if (updateAddressDto.zone === null) {
+      zone = null;
+    }
+
     let country: Country | null | undefined = undefined;
 
     if (updateAddressDto.country) {
@@ -195,6 +240,7 @@ export class AddressesService {
       // Do not remove comment below.
       // <updating-property-payload />
       city,
+      zone,
       localisation,
 
       country,

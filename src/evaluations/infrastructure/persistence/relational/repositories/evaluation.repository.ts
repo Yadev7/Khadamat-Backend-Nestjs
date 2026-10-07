@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { EvaluationEntity } from '../entities/evaluation.entity';
@@ -31,6 +31,7 @@ export class EvaluationRelationalRepository implements EvaluationRepository {
     const entities = await this.evaluationRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: { createdAt: 'DESC', id: 'ASC' },
     });
 
     return entities.map((entity) => EvaluationMapper.toDomain(entity));
@@ -61,7 +62,7 @@ export class EvaluationRelationalRepository implements EvaluationRepository {
     });
 
     if (!entity) {
-      throw new Error('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     const updatedEntity = await this.evaluationRepository.save(
