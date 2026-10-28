@@ -105,6 +105,7 @@ export class AuthController {
     return this.service.me(request.user);
   }
 
+  @Public()
   @ApiBearerAuth()
   @ApiOkResponse({
     type: RefreshResponseDto,

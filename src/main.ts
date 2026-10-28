@@ -26,12 +26,10 @@ async function bootstrap() {
     configService.getOrThrow('app.apiPrefix', { infer: true }) || 'api';
   const port = configService.getOrThrow('app.port', { infer: true }) || 3001;
 
-  // 1. Global Prefix
-  // app.setGlobalPrefix(apiPrefix, {
-  //   exclude: ['/'],
-  // });
-
-  app.setGlobalPrefix('api');
+  // 1. Global Prefix (e.g., 'api')
+  app.setGlobalPrefix(apiPrefix, {
+    exclude: ['/'],
+  });
 
   // 2. URI Versioning (/api/v1/...)
   app.enableVersioning({
@@ -60,7 +58,7 @@ async function bootstrap() {
   app.enableCors({
     origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true, // Crucial for passing 'auth_token' cookies
+    credentials: true, // Crucial for passing auth cookies
     allowedHeaders: [
       'Content-Type',
       'Accept',
@@ -76,7 +74,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      transform: true, // Enables automatic DTO type conversion (e.g. string to number)
+      transform: true, // Enables automatic DTO type conversion
       forbidNonWhitelisted: false,
       transformOptions: {
         enableImplicitConversion: true,

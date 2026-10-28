@@ -12,11 +12,6 @@ import { BusinessMapper } from '../mappers/business.mapper';
 import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
 import { DeepPartial } from 'src/utils/types/deep-partial.type';
 
-/**
- * Every alias the business listing query is allowed to join. Key = alias used in
- * the SQL, value = TypeORM relation path. Paths are declared relative to their
- * parent alias so they must always be joined parent-first (see depth sorting).
- */
 const BUSINESS_RELATION_JOINS: Record<string, string> = {
   service: 'business.service',
   flyer: 'business.flyer',
@@ -42,11 +37,6 @@ const BUSINESS_RELATION_JOINS: Record<string, string> = {
   videoEn: 'business.videoEn',
 };
 
-/**
- * Public (client facing) relation name -> aliases that must be selected.
- * Each list also contains the aliases of every parent on the path, because
- * selecting a nested relation without its parents produces `undefined` parents.
- */
 const BUSINESS_RELATION_ALIASES: Record<string, string[]> = {
   service: ['service'],
   flyer: ['flyer'],
@@ -72,7 +62,6 @@ const BUSINESS_RELATION_ALIASES: Record<string, string[]> = {
   videoEn: ['videoEn'],
 };
 
-/** Aliases needed on top of the requested relations to evaluate city/zone filters. */
 const FILTER_ALIASES: Record<'cityId' | 'zoneId', string[]> = {
   cityId: [
     'contact',
@@ -90,7 +79,15 @@ const FILTER_ALIASES: Record<'cityId' | 'zoneId', string[]> = {
   ],
 };
 
-const pathDepth = (path: string) => path.split('.').length;
+const getJoinLevel = (key: string): number => {
+  if (['service', 'flyer', 'localisation', 'contact', 'businessAddress', 'owner', 'manager', 'audioAr', 'audioFr', 'audioEn', 'videoAr', 'videoFr', 'videoEn'].includes(key)) {
+    return 1;
+  }
+  if (['address', 'businessAddressCity', 'businessAddressZone', 'businessAddressCountry', 'businessAddressLocalisation'].includes(key)) {
+    return 2;
+  }
+  return 3;
+};
 
 @Injectable()
 export class BusinessRelationalRepository implements BusinessRepository {
@@ -152,7 +149,10 @@ export class BusinessRelationalRepository implements BusinessRepository {
   }): Promise<BusinessListResult> {
     const cityId = filterOptions?.cityId?.trim() || undefined;
     const zoneId = filterOptions?.zoneId?.trim() || undefined;
-    const serviceId = filterOptions?.serviceId?.trim() || undefined;
+    const serviceId = 
+      filterOptions?.serviceId?.trim() || 
+      (filterOptions as any)?.service?.trim() || 
+      undefined;
 
     const selectedAliases = new Set<string>();
     const joinedAliases = new Set<string>();
@@ -162,7 +162,6 @@ export class BusinessRelationalRepository implements BusinessRepository {
       if (select) selectedAliases.add(alias);
     };
 
-    // Relations explicitly requested by the client (whitelisted, unknown ones ignored).
     const requested = (relations ?? '')
       .split(',')
       .map((name) => name.trim())
@@ -174,24 +173,23 @@ export class BusinessRelationalRepository implements BusinessRepository {
       for (const alias of aliases) join(alias, true);
     }
 
-    // Filtering needs its joins present even when they were not requested.
     if (serviceId) join('service', false);
+    join('localisation', false);
+    join('businessAddress', false);
+    join('businessAddressLocalisation', false);
     if (cityId) for (const alias of FILTER_ALIASES.cityId) join(alias, false);
     if (zoneId) for (const alias of FILTER_ALIASES.zoneId) join(alias, false);
 
     const queryBuilder: SelectQueryBuilder<BusinessEntity> =
       this.repository.createQueryBuilder('business');
 
-    // Parents must be joined before their children, otherwise TypeORM emits a
-    // child join referencing an alias that does not exist yet.
     const orderedJoins = Array.from(joinedAliases).sort(
-      (a, b) =>
-        pathDepth(BUSINESS_RELATION_JOINS[a]) -
-        pathDepth(BUSINESS_RELATION_JOINS[b]),
+      (a, b) => getJoinLevel(a) - getJoinLevel(b),
     );
 
     for (const alias of orderedJoins) {
       const path = BUSINESS_RELATION_JOINS[alias];
+      if (!path) continue;
       if (selectedAliases.has(alias)) {
         queryBuilder.leftJoinAndSelect(path, alias);
       } else {
@@ -211,13 +209,12 @@ export class BusinessRelationalRepository implements BusinessRepository {
     }
 
     if (zoneId) {
-      queryBuilder.andWhere(
-        '(zone.id = :zoneId OR businessAddressZone.id = :zoneId)',
-        { zoneId },
-      );
+      const zoneClause = cityId
+        ? '(zone.id = :zoneId OR businessAddressZone.id = :zoneId OR ((zone.id IS NULL) AND (businessAddressZone.id IS NULL) AND (city.id = :cityId OR businessAddressCity.id = :cityId)))'
+        : '(zone.id = :zoneId OR businessAddressZone.id = :zoneId)';
+      queryBuilder.andWhere(zoneClause, { zoneId, cityId });
     }
 
-    // Without a stable ORDER BY, LIMIT/OFFSET pagination can repeat or skip rows.
     queryBuilder
       .orderBy('business.createdAt', 'DESC')
       .addOrderBy('business.id', 'ASC');

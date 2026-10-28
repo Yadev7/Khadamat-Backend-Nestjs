@@ -97,8 +97,15 @@ export class BusinessEntity extends EntityRelationalHelper {
   @ManyToOne(() => ContactEntity)
   contact!: ContactEntity;
 
+  // @ManyToOne(() => ServiceEntity, { eager: false, nullable: true })
+  // service?: ServiceEntity | null;
+
   @ManyToOne(() => ServiceEntity, { eager: false, nullable: true })
+  @JoinColumn({ name: 'serviceId' }) // <--- تحديد عمود الربط صراحةً
   service?: ServiceEntity | null;
+
+  @Column({ nullable: true })
+  serviceId?: number; // أو string حسب نوع الـ ID في ServiceEntity
 
   @OneToMany(() => CallEntity, (call) => call.business)
   calls?: CallEntity[];
