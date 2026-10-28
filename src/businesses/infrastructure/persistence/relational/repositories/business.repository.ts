@@ -80,10 +80,34 @@ const FILTER_ALIASES: Record<'cityId' | 'zoneId', string[]> = {
 };
 
 const getJoinLevel = (key: string): number => {
-  if (['service', 'flyer', 'localisation', 'contact', 'businessAddress', 'owner', 'manager', 'audioAr', 'audioFr', 'audioEn', 'videoAr', 'videoFr', 'videoEn'].includes(key)) {
+  if (
+    [
+      'service',
+      'flyer',
+      'localisation',
+      'contact',
+      'businessAddress',
+      'owner',
+      'manager',
+      'audioAr',
+      'audioFr',
+      'audioEn',
+      'videoAr',
+      'videoFr',
+      'videoEn',
+    ].includes(key)
+  ) {
     return 1;
   }
-  if (['address', 'businessAddressCity', 'businessAddressZone', 'businessAddressCountry', 'businessAddressLocalisation'].includes(key)) {
+  if (
+    [
+      'address',
+      'businessAddressCity',
+      'businessAddressZone',
+      'businessAddressCountry',
+      'businessAddressLocalisation',
+    ].includes(key)
+  ) {
     return 2;
   }
   return 3;
@@ -149,9 +173,9 @@ export class BusinessRelationalRepository implements BusinessRepository {
   }): Promise<BusinessListResult> {
     const cityId = filterOptions?.cityId?.trim() || undefined;
     const zoneId = filterOptions?.zoneId?.trim() || undefined;
-    const serviceId = 
-      filterOptions?.serviceId?.trim() || 
-      (filterOptions as any)?.service?.trim() || 
+    const serviceId =
+      filterOptions?.serviceId?.trim() ||
+      (filterOptions as any)?.service?.trim() ||
       undefined;
 
     const selectedAliases = new Set<string>();
