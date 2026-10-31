@@ -4,11 +4,11 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
 import { FileRepository } from '../../persistence/file.repository';
 import { AllConfigType } from '../../../../config/config.type';
 import { FileType } from '../../../domain/file';
-import { detectFileCategory } from '../../../utils/detect-file-category.util'; // ← ADD
+import { detectFileCategory } from '../../../utils/detect-file-category.util';
+import { basename } from 'path';
 
 @Injectable()
 export class FilesLocalService {
@@ -30,13 +30,17 @@ export class FilesLocalService {
       });
     }
 
+    // Extract only the clean filename
+    const cleanFilename = basename(file.path.replace(/\\/g, '/'));
+
+    // Store the relative API path so the automatic transformer results in the full URL
+    const relativePath = `api/v1/files/${cleanFilename}`;
+
     return {
       file: await this.fileRepository.create({
-        path: `/${this.configService.get('app.apiPrefix', {
-          infer: true,
-        })}/v1/files/${file.path}`,
-        fileCategory: detectFileCategory(file.originalname), // ← ADD
-        fileDescription, // ← ADD
+        path: relativePath,
+        fileCategory: detectFileCategory(file.originalname),
+        fileDescription,
       }),
     };
   }
