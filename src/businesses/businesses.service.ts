@@ -216,8 +216,7 @@ export class BusinessesService {
     }
   }
 
-
-  async findByUserId(userId: string | number): Promise<Business[]> {
+  findByUserId(userId: string | number): Promise<Business[]> {
     return (this.businessRepository as any).findByUserId(userId);
   }
 
