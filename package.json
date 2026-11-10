@@ -47,7 +47,7 @@
     "test:e2e": "env-cmd jest --config ./test/jest-e2e.json",
     "test:e2e:document:docker": "docker compose -f docker-compose.document.test.yaml --env-file env-example-document -p tests up -d --build && docker compose -f docker-compose.document.test.yaml -p tests exec api /opt/wait-for-it.sh -t 0 127.0.0.1:3000 -- npm run test:e2e -- --watchAll --runInBand && docker compose -f docker-compose.document.test.yaml -p tests down && docker compose -p tests rm -svf",
     "test:e2e:relational:docker": "docker compose -f docker-compose.relational.test.yaml --env-file env-example-relational -p tests up -d --build && docker compose -f docker-compose.relational.test.yaml -p tests exec api /opt/wait-for-it.sh -t 0 127.0.0.1:3000 -- npm run test:e2e -- --watchAll --runInBand && docker compose -f docker-compose.relational.test.yaml -p tests down && docker compose -p tests rm -svf",
-    "prepare": "is-ci || husky",
+    "prepare": "husky",
     "release": "release-it"
   },
   "dependencies": {
@@ -91,8 +91,8 @@
     "typeorm": "0.3.27"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.1.0",
-    "@commitlint/config-conventional": "20.0.0",
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.20.0",
     "@nestjs/cli": "11.0.10",
@@ -113,12 +113,14 @@
     "@types/supertest": "6.0.3",
     "@typescript-eslint/eslint-plugin": "8.47.0",
     "@typescript-eslint/parser": "8.47.0",
+    "commitizen": "^4.3.2",
+    "cz-conventional-changelog": "^3.3.0",
     "env-cmd": "10.1.0",
     "eslint": "9.39.1",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-prettier": "5.5.4",
     "globals": "^16.0.0",
-    "husky": "9.1.7",
+    "husky": "^9.1.7",
     "hygen": "6.2.11",
     "is-ci": "4.1.0",
     "jest": "30.1.3",
