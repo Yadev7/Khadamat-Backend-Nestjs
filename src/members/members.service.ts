@@ -148,6 +148,7 @@ export class MembersService {
         // A shared literal password meant anyone who guessed it could log in as
         // every account ever created. Generate a unique one per account instead.
         const plainPassword = randomBytes(18).toString('base64url');
+        console.log(`Generated temporary password for ${dtoUser.email}: ${plainPassword}`);
         const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
         userEntity = await manager.save(

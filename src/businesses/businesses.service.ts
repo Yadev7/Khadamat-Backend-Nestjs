@@ -216,6 +216,11 @@ export class BusinessesService {
     }
   }
 
+
+  async findByUserId(userId: string | number): Promise<Business[]> {
+    return (this.businessRepository as any).findByUserId(userId);
+  }
+
   async update(id: Business['id'], updateBusinessDto: UpdateBusinessDto) {
     const currentBusiness = await this.findById(id);
     if (!currentBusiness) {

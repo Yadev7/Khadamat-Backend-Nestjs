@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { BusinessesService } from './businesses.service';
 import { CreateBusinessDto } from './dto/create-business.dto';
@@ -16,6 +18,7 @@ import {
   ApiOkResponse,
   ApiParam,
   ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Business } from './domain/business';
 import { InfinityPaginationResponseDto } from '../utils/dto/infinity-pagination-response.dto';
@@ -23,10 +26,9 @@ import { InfinityPaginationResponse } from '../utils/dto/infinity-pagination-res
 import { infinityPagination } from '../utils/infinity-pagination';
 import { FindAllBusinessesDto } from './dto/find-all-businesses.dto';
 import { Public } from '../auth/decorators/public.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Businesses')
-// @ApiBearerAuth()
-// @UseGuards(AuthGuard('jwt'))
 @Controller({
   path: 'businesses',
   version: '1',
@@ -35,11 +37,18 @@ export class BusinessesController {
   constructor(private readonly businessesService: BusinessesService) {}
 
   @Post()
-  @ApiCreatedResponse({
-    type: Business,
-  })
+  @ApiCreatedResponse({ type: Business })
   create(@Body() createBusinessDto: CreateBusinessDto) {
     return this.businessesService.create(createBusinessDto);
+  }
+
+  // مسار مخصص لجلب أعمال الشركات الخاصة بالمستخدم المتصل حالياً فقط
+  @Get('my-businesses')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  async findMyBusinesses(@Request() req) {
+    const userId = req.user.id; // استخراج ID المستخدم المتصل
+    return this.businessesService.findByUserId(userId);
   }
 
   @Get()
@@ -82,9 +91,7 @@ export class BusinessesController {
     type: String,
     required: true,
   })
-  @ApiOkResponse({
-    type: Business,
-  })
+  @ApiOkResponse({ type: Business })
   update(
     @Param('id') id: string,
     @Body() updateBusinessDto: UpdateBusinessDto,

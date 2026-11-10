@@ -162,6 +162,21 @@ export class BusinessRelationalRepository implements BusinessRepository {
     return BusinessMapper.toDomain(entity);
   }
 
+  // دالة جديدة لجلب شركات المستخدم المتصل فقط
+  async findByUserId(userId: string | number): Promise<Business[]> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('business')
+      .leftJoinAndSelect('business.owner', 'owner')
+      .leftJoinAndSelect('owner.user', 'user')
+      .leftJoinAndSelect('business.Address', 'businessAddress')
+      .leftJoinAndSelect('business.contact', 'contact')
+      .leftJoinAndSelect('business.service', 'service')
+      .where('user.id = :userId', { userId });
+
+    const entities = await queryBuilder.getMany();
+    return entities.map((entity) => BusinessMapper.toDomain(entity));
+  }
+
   async findAllWithPagination({
     paginationOptions,
     filterOptions,
